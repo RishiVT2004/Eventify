@@ -1,12 +1,18 @@
-import mongoose, { Mongoose } from "mongoose";
+import { mongoose } from "mongoose";
+import dotenv from 'dotenv';
+dotenv.config();
 const DataBase_URL = process.env.URL;
+console.log(DataBase_URL);
 
 mongoose.connect(DataBase_URL)
+    .then(() => {
+        console.log('Connected to Database ...',DataBase_URL);
+    })
     .catch(err => {
         console.log('error while connecting to mongoDB ...',err);
     })
 
-const UserSchema = new mongoose.Schema({
+const AdminSchema = new mongoose.Schema({
     Admin_Username : {
         type : String,
         required : true,
@@ -34,16 +40,12 @@ const UserSchema = new mongoose.Schema({
             unique : true
         },
         PhoneNo : {
-            type : Number,
+            type : String,
             required : true,
             unique : true
         }
     }],
+},{default : []})
 
-    default : []
-})
-
-const Admin = mongoose.model('Admin',UserSchema)
-module.exports = {
-    Admin
-}
+const Admin = mongoose.model('Admin',AdminSchema)
+export default Admin

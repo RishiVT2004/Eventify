@@ -1,12 +1,15 @@
-import {express} from express
-import {adminRoutes} from './routes/AdminRoute'
-const app = express();
+import express from 'express';  
+import dotenv from 'dotenv';
+import adminRoutes from './routes/AdminRoute.js'; // Ensure the file extension is included
 
-app.use(express.json())
+dotenv.config();
 
-app.use('/admin',adminRoutes);
+const app = express();  
 
-const PORT = process.env.PORT;
-app.listen(PORT,() => {
+app.use(express.json());
+app.use('/admin', adminRoutes);
+
+const PORT = process.env.PORT || 3000; 
+app.listen(PORT, () => {
     console.log(`Server is Running on port ${PORT}`);
-})
+});
