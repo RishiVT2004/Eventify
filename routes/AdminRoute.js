@@ -1,13 +1,13 @@
 import {Router} from 'express';
 import dotenv from 'dotenv'
-import { adminSignup } from '../controller/AdminController.js';
+import { adminSignup,adminLogin} from '../controller/AdminController.js';
 
 dotenv.config();
 const router = Router();
 
 // login and signup
 router.post('/signup' , adminSignup);
-router.post('login' , adminLogin);
+router.post('/login' , adminLogin);
 
 // manage events 
 router.get('/events'); // get list of event 

@@ -55,7 +55,9 @@ try{
             PhoneNo : HashedPhoneNo
         }]
     })
-        
+    
+    // apply jwt signin here 
+
     res.status(201).json({ message: "Admin registered successfully!" });
 
 
@@ -66,3 +68,44 @@ try{
         })
     }
 }
+
+export const adminLogin = async(req,res) => {
+    const {Admin_Username,Password} = req.body;
+
+    const InputSchema = zod.object({
+        Admin_Username : zod.string().min(8),
+        Password : zod.string().min(8)
+    })
+
+    const ParsedInput = InputSchema.safeParse({Admin_Username,Password})
+
+    if(ParsedInput.success){
+        try{
+            const ExistingAdmin = await Admin.findOne({Admin_Username : ParsedInput.data.Admin_Username});
+            if(!ExistingAdmin){
+                res.status(404).json("Admin not registered ...");
+            }
+            const IsCorrectPassword = await bcrypt.compare(ParsedInput.data.Password,ExistingAdmin.Password);
+            const IsCorrectUsername = ParsedInput.data.Admin_Username === ExistingAdmin.Admin_Username;
+
+            if(!IsCorrectPassword || !IsCorrectUsername){
+                res.status(403).json({
+                    message : "Invalid Username or Password",
+                })
+            }else{
+                 // apply jwt signin here 
+                res.status(202).json({
+                    "message" : "Admin Login successful "
+                })
+            }
+
+        }catch(err){
+            res.status(404).json({"error" : err})
+        }
+    }else{
+        res.status(403).json({
+            message : "invalid input credentials .. please try again",
+            error : ParsedInput.error.errors
+        })
+    }
+} 
