@@ -2,6 +2,8 @@ import Admin from '../models/AdminModel.js'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import zod from 'zod'
+const JWT_KEY = process.env.JWT_KEY;
+
 
 export const adminSignup = async(req,res) => {
 
@@ -44,7 +46,7 @@ try{
     const HashedPassword = await bcrypt.hash(ParsedInput.data.Password,10);
     const HashedPhoneNo = await bcrypt.hash(ParsedInput.data.AdminInfo[0].PhoneNo,10);
         
-    await Admin.create({
+    const newAdmin = await Admin.create({
         Admin_Username : ParsedInput.data.Admin_Username,
         Password : HashedPassword,
         AdminInfo : [{
@@ -57,8 +59,18 @@ try{
     })
     
     // apply jwt signin here 
+    const token = jwt.sign(
+        {
+            id : newAdmin._id,
+        },
+        JWT_KEY,
+        {expiresIn : ''}
+    )
 
-    res.status(201).json({ message: "Admin registered successfully!" });
+    res.status(201).json({ 
+        "message": "Admin registered successfully!",
+        "token": token
+    });
 
 
     }catch(err){
@@ -94,9 +106,16 @@ export const adminLogin = async(req,res) => {
                 })
             }else{
                  // apply jwt signin here 
-                res.status(202).json({
-                    "message" : "Admin Login successful "
+                const token = jwt.sign({
+                    id: ExistingAdmin._id
+                },JWT_KEY,{
+                    expiresIn:'1hr'
                 })
+                res.status(202).json({
+                    "message" : "Admin Login successful ",
+                    "token" : token
+                })
+                console.log(token)
             }
 
         }catch(err){
@@ -108,4 +127,11 @@ export const adminLogin = async(req,res) => {
             error : ParsedInput.error.errors
         })
     }
-} 
+}
+
+export const getAdminProfile = async(req,res) => {
+    res.json({
+        message: "Admin profile fetched successfully",
+        adminId: req.admin.id,
+    });
+}
