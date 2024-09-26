@@ -3,7 +3,7 @@ import dotenv from "dotenv"
 dotenv.config();
 const URL = process.env.URL;
 
-mongoose.connect(DataBase_URL)
+mongoose.connect(URL)
     .catch(err => {
         console.log('error while connecting to mongoDB ...',err);
     })

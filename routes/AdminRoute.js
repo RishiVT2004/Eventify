@@ -1,13 +1,12 @@
 import {Router} from 'express';
 import dotenv from 'dotenv'
-import { adminSignup,adminLogin,getAdminProfile} from '../controller/AdminController.js';
+import { adminSignup,adminLogin,getAdminProfile} from '../controller/admin/AdminController_Login_Signup_Get.js';
 import { jwtAuth } from '../middlewares/Auth.js';
 
 dotenv.config();
 const router = Router();
 
-// get amin info 
-
+// get admin info 
 router.get('/profile',jwtAuth,getAdminProfile)
 // login and signup
 router.post('/signup' , adminSignup);

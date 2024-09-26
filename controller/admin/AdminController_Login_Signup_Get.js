@@ -1,4 +1,4 @@
-import Admin from '../models/AdminModel.js'
+import Admin from '../../models/AdminModel.js'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import zod from 'zod'
@@ -28,7 +28,6 @@ try{
     const ParsedInput = InputSchema.safeParse(req.body)
 
     if(!ParsedInput.success){
-        console.log(ParsedInput.error); // Log the error for debugging
             return res.status(400).json({
                 message: "Error in parsing",
                 errors: ParsedInput.error.errors // Return detailed errors
@@ -57,14 +56,16 @@ try{
             PhoneNo : HashedPhoneNo
         }]
     })
+
     
     // apply jwt signin here 
     const token = jwt.sign(
         {
             id : newAdmin._id,
+            role : "admin"
         },
         JWT_KEY,
-        {expiresIn : ''}
+        {expiresIn : '1hr'}
     )
 
     res.status(201).json({ 
@@ -107,7 +108,8 @@ export const adminLogin = async(req,res) => {
             }else{
                  // apply jwt signin here 
                 const token = jwt.sign({
-                    id: ExistingAdmin._id
+                    id: ExistingAdmin._id,
+                    role : "admin"
                 },JWT_KEY,{
                     expiresIn:'1hr'
                 })
@@ -115,7 +117,6 @@ export const adminLogin = async(req,res) => {
                     "message" : "Admin Login successful ",
                     "token" : token
                 })
-                console.log(token)
             }
 
         }catch(err){

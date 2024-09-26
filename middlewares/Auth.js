@@ -17,7 +17,13 @@ export const jwtAuth = async(req,res,next) => {
     try{
         const decodedToken = jwt.verify(DerivedToken,JWT_KEY);
         if(decodedToken){
-            req.admin = decodedToken;
+            if(decodedToken.role === "admin"){
+                req.admin = decodedToken;
+            }else if(decodedToken.role === "user"){
+                req.user = decodedToken
+            }else{
+                return res.status(403).json({ message: "Invalid role in token" });
+            }
         }else{
             return res.status(401).json({error : "unable to validate token"})
         }
