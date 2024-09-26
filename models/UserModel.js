@@ -1,18 +1,15 @@
-import { mongoose } from "mongoose";
-import dotenv from 'dotenv';
+import mongoose from "mongoose";
+import dotenv from "dotenv"
 dotenv.config();
-const DataBase_URL = process.env.URL;
- 
+const URL = process.env.URL;
+
 mongoose.connect(DataBase_URL)
-    .then(() => {
-        console.log('Connected to Database ...',DataBase_URL);
-    })
     .catch(err => {
         console.log('error while connecting to mongoDB ...',err);
     })
 
-const AdminSchema = new mongoose.Schema({
-    Admin_Username : {
+const UserSchema = new mongoose.Schema({
+    User_Username : {
         type : String,
         required : true,
     },
@@ -20,7 +17,7 @@ const AdminSchema = new mongoose.Schema({
         type : String,
         required : true,
     },
-    AdminInfo : [{
+    UserInfo : [{
         Name : {
             type : String,
             required : true
@@ -44,7 +41,8 @@ const AdminSchema = new mongoose.Schema({
             unique : true
         }
     }],
-},{default : []})
 
-const Admin = mongoose.model('Admin',AdminSchema)
-export default Admin
+}, {default  : []});
+
+const User = mongoose.model('User',UserSchema);
+export default User;
