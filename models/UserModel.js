@@ -28,7 +28,8 @@ const UserSchema = new mongoose.Schema({
         },
         Gender : {
             type : String,
-            required : true
+            required : true,
+            enum : ['Male','Female','Others']
         },
         EmailID : {
             type : String,
