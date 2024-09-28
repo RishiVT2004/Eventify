@@ -25,12 +25,12 @@ const EventSchema = new mongoose.Schema({
     "Capacity" : {
         type : Number,
         required : true,
-        min : 30
+        min : [20,'Capacity for event needs to be min 20']
     },
     "Price" : {
         type : Double,
         required : true,
-        min : 99
+        min : [99,'Price for each ticket must be min 99 Rupees']
     },
     "Created_At" : {
         type : Date,
