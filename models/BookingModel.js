@@ -6,9 +6,8 @@ dotenv.config()
 const URL = process.env.URL;
 
 mongoose.connect(URL)
-    .catch(err => {
-        console.log(err);
-});
+    .catch(err => console.error('Error connecting to database:', err.message)); 
+
 
 const BookingSchema = mongoose.Schema({
     "User" : {
@@ -31,21 +30,21 @@ const BookingSchema = mongoose.Schema({
         required : true,
         unique : true
     },
-    "AmountPaid" : {
-        type : Double,
-        required : true,
-        validate : {
-            validator : function(val){
-                return val >= 99;
-            },
-            message : a => `${a.val} is not a valid payement amount , it must be min 99 rs`
-        }
-    },
     "TicketQuantity" : {
         type : Number,
         required : true,
         min : [1,'Min 1 ticket needs to be booked'],
         max : [10,'Max 10 tickets can be booked']
+    },
+    "AmountPaid" : {
+        type : Number,
+        required : true,
+        validate : {
+            validator : function(val){
+                return val >= 99;
+            },
+            message: a => `${a.value} is not a valid payment amount, it must be at least 99 Rs`
+        }
     }
 },{default : []})
 

@@ -5,9 +5,8 @@ dotenv.config()
 const URL = process.env.URL;
 
 mongoose.connect(URL)
-    .catch(err=>{
-        console.log(err);
-    });
+    .catch(err => console.error('Error connecting to database:', err.message)); 
+
 
 const EventSchema = new mongoose.Schema({
     "Name" : {
@@ -28,7 +27,7 @@ const EventSchema = new mongoose.Schema({
         min : [20,'Capacity for event needs to be min 20']
     },
     "Price" : {
-        type : Double,
+        type : Number,
         required : true,
         min : [99,'Price for each ticket must be min 99 Rupees']
     },
@@ -41,7 +40,7 @@ const EventSchema = new mongoose.Schema({
         type : Date,
         default : Date.now
     },
-    "Registered_Users : " : [
+    "Registered_Users " : [
         {
             "userID" : {
                 type : mongoose.Schema.Types.ObjectId,
