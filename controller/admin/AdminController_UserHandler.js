@@ -19,7 +19,7 @@ export const userList = async(req,res) => {
             "EmailID" : user.UserInfo[0].EmailID
         }))
         
-        res.status(200).json({
+        return res.status(200).json({
             "message" : "Registed User List",
             "List" : userList
         })
@@ -37,7 +37,7 @@ export const eventUserList = async(req,res) => {
         const usersAtEvent = await Event.findById(EventID).populate('Registered_Users')
 
         if(!usersAtEvent){
-            res.status(404).json({
+            return res.status(404).json({
                 "message" : "Event Dosen't Exist"  
             })
         }
@@ -47,7 +47,7 @@ export const eventUserList = async(req,res) => {
             "User List -:" : EventUserList
         })
     }catch(err){
-        res.status(500).json({
+        return res.status(500).json({
             "error" : err.message
         })
     }
@@ -61,9 +61,9 @@ export const BanUser = async(req,res) => {
             {isBanned : true},
             {new : true}
         )
-
+ 
         if(!user){
-            res.status(404).json({
+            return res.status(404).json({
                 message : "User Not Found"
             })
         }
@@ -84,7 +84,7 @@ export const UnbanUser = async(req,res) => {
         )
 
         if(!user){
-            res.status(404).json({
+            return res.status(404).json({
                 message : "User Not Found"
             })
         }
@@ -98,10 +98,10 @@ export const UnbanUser = async(req,res) => {
 export const DeleteUser = async(req,res) => {
     try{
         const {userID} = req.params
-        const user = User.findByIdAndDelete(userID)
+        const user = await User.findByIdAndDelete(userID)
 
         if(!user){
-            res.status(404).json({
+            return res.status(404).json({
                 message : "User Not Found"
             })
         }

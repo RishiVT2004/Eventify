@@ -1,4 +1,5 @@
 import User from '../../models/UserModel.js'
+import BannedUser from '../../models/BannedUser.js'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import zod from 'zod'
@@ -6,8 +7,9 @@ const JWT_KEY = process.env.JWT_KEY
 
 export const userSignup = async(req,res)=> {
     const {User_Username,Password,UserInfo} = req.body;
-    const BannedUser = await BannedEmail.findOne({ email });
-        if (BannedUser) {
+    const email = UserInfo.EmailID
+    const BanUser = await BannedUser.findOne({ email });
+        if (BanUser) {
             return res.status(403).json({
                 message: "This email has been banned and cannot be used for signup"
             });
@@ -56,6 +58,11 @@ export const userSignup = async(req,res)=> {
                 role : "user"
             },JWT_KEY,{
                 expiresIn : '1hr'
+            })
+
+            res.status(202).json({
+                "message" : "User Signup successful ",
+                "token" : token
             })
         }catch(err){
             res.status(403).json({

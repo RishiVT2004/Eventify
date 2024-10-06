@@ -10,8 +10,9 @@ export const adminSignup = async(req,res) => {
 
 try{
     const {Admin_Username,Password,AdminInfo} = req.body;
-    const BannedUser = await BannedEmail.findOne({ email });
-        if (BannedUser) {
+    const email = AdminInfo[0].EmailID
+    const BanUser = await BannedUser.findOne({ email });
+        if (BanUser) {
             return res.status(403).json({
                 message: "This email has been banned and cannot be used for signup"
             });
