@@ -1,7 +1,7 @@
 import {Router} from 'express';
 import dotenv from 'dotenv'
 import { adminSignup,adminLogin,getAdminProfile} from '../controller/admin/AdminController_Login_Signup_Get.js';
-import { userList } from '../controller/admin/AdminController_UserHandler.js';
+import { userList,eventUserList } from '../controller/admin/AdminController_UserHandler.js';
 import { jwtAuth } from '../middlewares/Auth.js';
 
 dotenv.config();
@@ -16,9 +16,10 @@ router.post('/login' , adminLogin);
 
 // manage users
 router.get('/userList',jwtAuth,userList); // gets list of all users registered in a particular event 
-router.get(':eventID/userList') // get list of registered in a particular event 
-router.put('/users/:userID'); // updates role of a user (can make him admin)
-router.delete('/users/:userID');  // delete a user 
+router.get(':eventID/userList',jwtAuth,eventUserList) // get list of registered in a particular event 
+router.put('/BanUser/:userID');  // ban a user 
+router.put('/UnbanUser/:userID') // unban a user
+router.delete('/DeleteUser/:userID') // deletes a user permanently 
 
 // manage events 
 router.get('/events'); // get list of event 

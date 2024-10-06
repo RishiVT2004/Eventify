@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import dotenv from 'dotenv'
-import User from "./UserModel";
 dotenv.config()
 const URL = process.env.URL;
 
@@ -42,21 +41,27 @@ const EventSchema = new mongoose.Schema({
     },
     "Registered_Users " : [
         {
-            "userID" : {
+            "UserID" : {
                 type : mongoose.Schema.Types.ObjectId,
                 ref : 'User',
                 required : true,
                 immutable: true
             }
         },{
-            "paymentID" : {
+            "User-Email" : {
+                type : String,
+                ref : 'User',
+                required : true
+            }
+        },{
+            "PaymentID" : {
                 type: String, 
                 required: true,
                 unique : true,
                 immutable: true
             }
         },{
-            "bookingDate" : {
+            "BookingDate" : {
                 type: Date,
                 default: Date.now,
                 immutable: true

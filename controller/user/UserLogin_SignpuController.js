@@ -6,6 +6,12 @@ const JWT_KEY = process.env.JWT_KEY
 
 export const userSignup = async(req,res)=> {
     const {User_Username,Password,UserInfo} = req.body;
+    const BannedUser = await BannedEmail.findOne({ email });
+        if (BannedUser) {
+            return res.status(403).json({
+                message: "This email has been banned and cannot be used for signup"
+            });
+        }
     const InputSchema = zod.object({
         User_Username : zod.string().min(6),
         Password : zod.string().min(8),

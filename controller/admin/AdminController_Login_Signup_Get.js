@@ -1,4 +1,5 @@
 import Admin from '../../models/AdminModel.js'
+import BannedUser from '../../models/BannedUser.js'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import zod from 'zod'
@@ -9,7 +10,12 @@ export const adminSignup = async(req,res) => {
 
 try{
     const {Admin_Username,Password,AdminInfo} = req.body;
-
+    const BannedUser = await BannedEmail.findOne({ email });
+        if (BannedUser) {
+            return res.status(403).json({
+                message: "This email has been banned and cannot be used for signup"
+            });
+        }
     // Input Validation 
 
     const InputSchema = zod.object({
