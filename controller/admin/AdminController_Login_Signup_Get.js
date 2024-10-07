@@ -45,7 +45,7 @@ try{
     const CheckEmail = ParsedInput.data.AdminInfo[0].EmailID; 
     const DoesAdminAlreadyExist = await Admin.findOne({'AdminInfo.EmailID' : CheckEmail});
     if(DoesAdminAlreadyExist){;
-         return res.status(400).json({error : "User is already Registered"});
+        return res.status(400).json({error : "User is already Registered"});
     }
 
     // hashing

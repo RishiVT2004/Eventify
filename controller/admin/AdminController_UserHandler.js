@@ -10,6 +10,9 @@ const JWT_KEY = process.env.JWT_KEY;
 
 export const userList = async(req,res) => {
     try{
+        if(!req.admin){
+            return res.status(403).json({ message: "Only admins can create events" });
+        }
         const user = await User.find();
         
         const userList = user.map(user => ({
@@ -34,6 +37,9 @@ export const userList = async(req,res) => {
 export const eventUserList = async(req,res) => {
     const {EventID} = req.params;
     try{
+        if(!req.admin){
+            return res.status(403).json({ message: "Only admins can create events" });
+        }
         const usersAtEvent = await Event.findById(EventID).populate('Registered_Users')
 
         if(!usersAtEvent){
@@ -55,6 +61,9 @@ export const eventUserList = async(req,res) => {
 
 export const BanUser = async(req,res) => {
     try{
+        if(!req.admin){
+            return res.status(403).json({ message: "Only admins can create events" });
+        }
         const {userID} = req.params
         const user = await User.findByIdAndUpdate(
             userID,
@@ -76,6 +85,9 @@ export const BanUser = async(req,res) => {
 
 export const UnbanUser = async(req,res) => {
     try{
+        if(!req.admin){
+            return res.status(403).json({ message: "Only admins can create events" });
+        }
         const {userID} = req.params
         const user = await User.findByIdAndUpdate(
             userID,
@@ -97,6 +109,9 @@ export const UnbanUser = async(req,res) => {
 
 export const DeleteUser = async(req,res) => {
     try{
+        if(!req.admin){
+            return res.status(403).json({ message: "Only admins can create events" });
+        }
         const {userID} = req.params
         const user = await User.findByIdAndDelete(userID)
 
