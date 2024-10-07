@@ -51,3 +51,26 @@ export const createEvent = async(req,res) => {
         })
     }
 }
+
+export const eventList = async(req,res) => {
+    try{   
+        if(!req.admin){
+            return res.status(403).json({ message: "Only admins can create events" });
+        }
+        const list = Event.find()
+        if(!list){
+            return res.status(400).json({
+                error : "No events found"
+            })
+        }
+        return res.status(201).json({
+            "message" : "Event List",
+            "list" : list
+        })
+    }catch(err){
+        return res.status(500).json({
+            message : 'Server Error',
+            error : err.message
+        })
+    }
+}

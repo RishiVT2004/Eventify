@@ -23,8 +23,8 @@ router.put('/unbanUser/:userID',jwtAuth,UnbanUser) // unban a user
 router.delete('/deleteUser/:userID',jwtAuth,DeleteUser) // deletes a user permanently 
 
 // manage events 
-router.get('/event',jwtAuth,createEvent); // get list of event 
-router.post('/event'); // post a new event 
+router.get('/event'); // get list of event 
+router.post('/event',jwtAuth,createEvent); // post a new event 
 router.put('/events/:eventID'); // update info of an event 
 router.delete('/event/:eventID'); // delete an event 
 
