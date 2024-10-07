@@ -55,7 +55,7 @@ const EventSchema = new mongoose.Schema({
             }
         },{
             "PaymentID" : {
-                type: String, 
+                type: String,
                 required: true,
                 unique : true,
                 immutable: true

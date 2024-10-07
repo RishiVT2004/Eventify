@@ -20,6 +20,11 @@ const BookingSchema = mongoose.Schema({
         ref : 'Event',
         required : true
     },
+    "Status" : {
+        type : String,
+        default : "Confirmed",
+        enum : ["Confirmed","Cancelled","Pending","Failed","Refunded"]
+    },
     "BookingDate" : {
         type : Date,
         default : Date.now,
