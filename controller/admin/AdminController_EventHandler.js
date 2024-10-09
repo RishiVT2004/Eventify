@@ -56,7 +56,7 @@ export const eventList = async(req,res) => {
         if(!req.admin){
             return res.status(403).json({ message: "Only admins can create events" });
         }
-        const list = Event.find()
+        const list = await Event.find()
         if(!list){
             return res.status(400).json({
                 error : "No events found"
@@ -93,7 +93,7 @@ export const updateEvent = async(req,res) => {
 
 
         const UpdatedEvent = await Event.findOneAndUpdate(
-            eventID,
+            {_id : eventID},
             {
                 "Name" : Name,
                 "Date" : Date,
@@ -127,7 +127,7 @@ export const deleteEvent = async(req,res) =>{
             return res.status(403).json({ message: "Only admins can create events" });
         }
         const {eventID} = req.params;
-        const eventToBeDeleted = await Event.findByIdAndDelete({eventID})
+        const eventToBeDeleted = await Event.findByIdAndDelete({_id : eventID})
         if(!eventToBeDeleted){
             return res.status(500).json({
                 error : "Unable to find event with the given id"

@@ -25,8 +25,8 @@ router.delete('/deleteUser/:userID',jwtAuth,DeleteUser) // deletes a user perman
 // manage events 
 router.get('/event',jwtAuth,eventList); // get list of event 
 router.post('/event',jwtAuth,createEvent); // post a new event 
-router.put('/events/:eventID',jwtAuth,updateEvent); // update info of an event 
-router.delete('/event/:eventID',jwtAuth,deleteEvent); // delete an event 
+router.put('/updateEvent/:eventID',jwtAuth,updateEvent); // update info of an event 
+router.delete('/deleteEvent/:eventID',jwtAuth,deleteEvent); // delete an event 
 
 
 
