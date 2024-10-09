@@ -2,7 +2,7 @@ import {Router} from 'express';
 import dotenv from 'dotenv'
 import { adminSignup,adminLogin,getAdminProfile} from '../controller/admin/AdminController_Login_Signup_Get.js';
 import { userList,eventUserList,BanUser,UnbanUser,DeleteUser } from '../controller/admin/AdminController_UserHandler.js';
-import { createEvent } from '../controller/admin/AdminController_EventHandler.js';
+import { createEvent , eventList , updateEvent , deleteEvent} from '../controller/admin/AdminController_EventHandler.js';
 import { jwtAuth } from '../middlewares/Auth.js';
 
 dotenv.config();
@@ -23,10 +23,10 @@ router.put('/unbanUser/:userID',jwtAuth,UnbanUser) // unban a user
 router.delete('/deleteUser/:userID',jwtAuth,DeleteUser) // deletes a user permanently 
 
 // manage events 
-router.get('/event'); // get list of event 
+router.get('/event',jwtAuth,eventList); // get list of event 
 router.post('/event',jwtAuth,createEvent); // post a new event 
-router.put('/events/:eventID'); // update info of an event 
-router.delete('/event/:eventID'); // delete an event 
+router.put('/events/:eventID',jwtAuth,updateEvent); // update info of an event 
+router.delete('/event/:eventID',jwtAuth,deleteEvent); // delete an event 
 
 
 
