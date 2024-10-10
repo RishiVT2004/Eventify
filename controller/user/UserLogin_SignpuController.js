@@ -5,8 +5,15 @@ import bcrypt from 'bcryptjs'
 import zod from 'zod'
 const JWT_KEY = process.env.JWT_KEY
 
+const calcAge = (dob) => {
+    const birthDate = new Date(dob);
+    const currAge = Date.now() - birthDate.getTime()
+    const newCurrAge = new Date(currAge)
+    return Math.abs(newCurrAge.getUTCFullYear - 1970) 
+}
+
 export const userSignup = async(req,res)=> {
-    const {User_Username,Password,UserInfo} = req.body;
+    const {Username,Password,UserInfo} = req.body;
     const email = UserInfo.EmailID
     const BanUser = await BannedUser.findOne({ email });
         if (BanUser) {
@@ -15,11 +22,13 @@ export const userSignup = async(req,res)=> {
             });
         }
     const InputSchema = zod.object({
-        User_Username : zod.string().min(6),
+        Username : zod.string().min(6),
         Password : zod.string().min(8),
         UserInfo : zod.array(zod.object({
             Name : zod.string(),
-            Age : zod.number().min(18),
+            DOB: z.string().refine(date => !isNaN(Date.parse(date)), {
+                message: "Invalid date format"
+            }),
             Gender : zod.string(),
             EmailID : zod.string().email(),
             PhoneNo : zod.string().length(10)
@@ -37,16 +46,21 @@ export const userSignup = async(req,res)=> {
                     "message" : "User Already Exist ... please proceed to login"
                 })
             }
-
+            const Age = calcAge(ParsedInput.data.UserInfo[0].DOB)
+            if(Age < 15){
+                return res.status(400).json({
+                    message: "You must be at least 18 years old to register as a User."
+                });
+            }
             const HashedPassword = await bcrypt.hash(ParsedInput.data.Password , 10)
             const HashedPhoneNo = await bcrypt.hash(ParsedInput.data.UserInfo[0].PhoneNo , 10);
 
             const NewUser = await User.create({
-                User_Username : ParsedInput.data.User_Username,
+                Username : ParsedInput.data.Username,
                 Password : HashedPassword,
                 UserInfo : [{
                     Name : ParsedInput.data.UserInfo[0].Name,
-                    Age : ParsedInput.data.UserInfo[0].Age,
+                    DOB : ParsedInput.data.UserInfo[0].DOB,
                     Gender : ParsedInput.data.UserInfo[0].Gender,
                     EmailID : ParsedInput.data.UserInfo[0].EmailID,
                     PhoneNo : HashedPhoneNo
@@ -79,10 +93,10 @@ export const userSignup = async(req,res)=> {
 
 
 export const userLogin = async(req,res) => {
-    const {User_Username,Password} = req.body;
+    const {Username,Password} = req.body;
 
     const InputSchema = zod.object({
-        User_Username : zod.string().min(6),
+        Username : zod.string().min(6),
         Password : zod.string().min(8)
     })
 
@@ -90,13 +104,13 @@ export const userLogin = async(req,res) => {
 
     if(ParsedInput.success){
         try{
-            const ExistingUser = await User.findOne({"User_Username" : ParsedInput.data.User_Username})
+            const ExistingUser = await User.findOne({"Username" : ParsedInput.data.Username})
             if(!ExistingUser){
                 res.status(404).json("User not registered ...");
             }
 
             const IsCorrectPassword = await bcrypt.compare(ParsedInput.data.Password,ExistingUser.Password);
-            const IsCorrectUsername = (ParsedInput.data.User_Username === ExistingUser.User_Username);
+            const IsCorrectUsername = (ParsedInput.data.Username === ExistingUser.Username);
 
             if(!IsCorrectPassword || !IsCorrectUsername){
                 res.status(403).json({
@@ -127,9 +141,3 @@ export const userLogin = async(req,res) => {
     }
 }
 
-export const getUserProfile = async(req,res) => {
-    res.json({
-        message: "User profile fetched successfully",
-        userId: req.user.id,
-    });
-}

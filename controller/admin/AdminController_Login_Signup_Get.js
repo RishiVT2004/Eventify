@@ -5,7 +5,12 @@ import bcrypt from 'bcryptjs'
 import zod from 'zod'
 const JWT_KEY = process.env.JWT_KEY;
 
-
+const calcAge = (dob) => {
+    const birthDate = new Date(dob);
+    const currAge = Date.now() - birthDate.getTime()
+    const newCurrAge = new Date(currAge)
+    return Math.abs(newCurrAge.getUTCFullYear - 1970) 
+}
 export const adminSignup = async(req,res) => {
 
 try{
@@ -24,7 +29,9 @@ try{
         Password : zod.string().min(8),
         AdminInfo : zod.array(zod.object({
             Name : zod.string(),
-            Age : zod.number().min(18),
+            DOB: z.string().refine(date => !isNaN(Date.parse(date)), {
+                message: "Invalid date format"
+            }),
             Gender : zod.string(),
             EmailID : zod.string().email(),
             PhoneNo : zod.string().length(10)
@@ -39,6 +46,13 @@ try{
                 message: "Error in parsing",
                 errors: ParsedInput.error.errors // Return detailed errors
             });
+    }
+
+    const Age = calcAge(ParsedInput.data.AdminInfo[0].DOB)
+    if(Age < 18){
+        return res.status(400).json({
+            message: "You must be at least 18 years old to register as an admin."
+        });
     }
 
      // checking if admin exists
@@ -57,7 +71,7 @@ try{
         Password : HashedPassword,
         AdminInfo : [{
             Name : ParsedInput.data.AdminInfo[0].Name,
-            Age : ParsedInput.data.AdminInfo[0].Age,
+            DOB : ParsedInput.data.AdminInfo[0].DOB,
             Gender : ParsedInput.data.AdminInfo[0].Gender,
             EmailID : ParsedInput.data.AdminInfo[0].EmailID,
             PhoneNo : HashedPhoneNo

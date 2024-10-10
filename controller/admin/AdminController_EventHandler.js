@@ -110,7 +110,7 @@ export const updateEvent = async(req,res) => {
         }
 
         return res.status(200).json({
-            message : "event UpdatedEvent",
+            message : "event Updated",
             event : UpdatedEvent
         })
     }catch(err){

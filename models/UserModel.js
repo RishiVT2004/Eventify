@@ -8,7 +8,7 @@ mongoose.connect(URL)
 
 
 const UserSchema = new mongoose.Schema({
-    User_Username : {
+    Username : {
         type : String,
         required : true,
     },
@@ -23,16 +23,18 @@ const UserSchema = new mongoose.Schema({
     UserInfo : [{
         Name : {
             type : String,
-            required : true
+            required : true,
+            immutable : true
         },
-        Age : {
-            type : Number,
-            required : true
+        DOB: {
+            type: Date, 
+            required: true
         },
         Gender : {
             type : String,
             required : true,
-            enum : ['Male','Female','Others']
+            enum : ['Male','Female','Others'],
+            immutable : true
         },
         EmailID : {
             type : String,

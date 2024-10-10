@@ -24,9 +24,9 @@ const AdminSchema = new mongoose.Schema({
             type : String,
             required : true
         },
-        Age : {
-            type : Number,
-            required : true
+        DOB: {
+            type: Date, 
+            required: true
         },
         Gender : {
             type : String,
