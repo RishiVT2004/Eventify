@@ -22,16 +22,19 @@ const AdminSchema = new mongoose.Schema({
     AdminInfo : [{
         Name : {
             type : String,
-            required : true
+            required : true,
+            immutable : true
         },
         DOB: {
             type: Date, 
-            required: true
+            required: true,
+            immutable : true
         },
         Gender : {
             type : String,
             required : true,
-            enum : ['Male','Female','Others']
+            enum : ['Male','Female','Others'],
+            immutable : true
         },
         EmailID : {
             type : String,
