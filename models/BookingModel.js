@@ -54,5 +54,4 @@ const BookingSchema = mongoose.Schema({
 },{default : []})
 
 const Booking = mongoose.model('Booking',BookingSchema)
-
 export default Booking
