@@ -9,12 +9,13 @@ const calcAge = (dob) => {
     const birthDate = new Date(dob);
     const currAge = Date.now() - birthDate.getTime()
     const newCurrAge = new Date(currAge)
-    return Math.abs(newCurrAge.getUTCFullYear - 1970) 
+    const returnAge = Math.abs(newCurrAge.getUTCFullYear() - 1970)
+    return returnAge
 }
 
 export const userSignup = async(req,res)=> {
     const {Username,Password,UserInfo} = req.body;
-    const email = UserInfo.EmailID
+    const email = UserInfo[0].EmailID
     const BanUser = await BannedUser.findOne({ email });
         if (BanUser) {
             return res.status(403).json({
@@ -26,8 +27,8 @@ export const userSignup = async(req,res)=> {
         Password : zod.string().min(8),
         UserInfo : zod.array(zod.object({
             Name : zod.string(),
-            DOB: z.string().refine(date => !isNaN(Date.parse(date)), {
-                message: "Invalid date format"
+            DOB: zod.string().refine(date => !isNaN(Date.parse(date)), {
+                message: "Invalid date format,date format must be year--month--day"
             }),
             Gender : zod.string(),
             EmailID : zod.string().email(),
@@ -49,7 +50,7 @@ export const userSignup = async(req,res)=> {
             const Age = calcAge(ParsedInput.data.UserInfo[0].DOB)
             if(Age < 15){
                 return res.status(400).json({
-                    message: "You must be at least 18 years old to register as a User."
+                    message: "You must be at least 15 years old to register as a User."
                 });
             }
             const HashedPassword = await bcrypt.hash(ParsedInput.data.Password , 10)

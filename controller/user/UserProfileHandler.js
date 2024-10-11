@@ -11,7 +11,7 @@ const InputSchema1 = zod.object({
 })
 
 const InputSchema2 = zod.object({
-    Password : zod.string().min(8)
+    New_Password : zod.string().min(8)
 })
 
 export const getUserProfile = async(req,res) => {
@@ -43,7 +43,7 @@ export const updateUserProfile = async(req,res) => {
             })
         }
 
-        updates = {} // tracks the updated fields , user is not required to provide all 3 fileds at once 
+        let updates = {} // tracks the updated fields , user is not required to provide all 3 fileds at once 
         if(ParsedInput.data.Username){
             updates.Username = ParsedInput.data.Username
         }
@@ -85,7 +85,7 @@ export const changePassword = async(req,res) => {
                 errors: NewPassword.error.errors 
             })
         }
-        const NewHashedPassword = await bcrypt.hash(NewPassword.data.Password,10)
+        const NewHashedPassword = await bcrypt.hash(NewPassword.data.New_Password,10)
         const PasswordToUpdate = await User.findByIdAndUpdate(
             req.user.id,
             {"Password" : NewHashedPassword},

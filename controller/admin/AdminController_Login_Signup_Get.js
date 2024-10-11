@@ -14,7 +14,7 @@ const calcAge = (dob) => {
 export const adminSignup = async(req,res) => {
 
 try{
-    const {Admin_Username,Password,AdminInfo} = req.body;
+    const {Username,Password,AdminInfo} = req.body;
     const email = AdminInfo[0].EmailID
     const BanUser = await BannedUser.findOne({ email });
         if (BanUser) {
@@ -25,12 +25,12 @@ try{
     // Input Validation 
 
     const InputSchema = zod.object({
-        Admin_Username : zod.string().min(8),
+        Username : zod.string().min(8),
         Password : zod.string().min(8),
         AdminInfo : zod.array(zod.object({
             Name : zod.string(),
-            DOB: z.string().refine(date => !isNaN(Date.parse(date)), {
-                message: "Invalid date format"
+            DOB: zod.string().refine(date => !isNaN(Date.parse(date)), {
+                message: "Invalid date format , date format must be year--month--day"
             }),
             Gender : zod.string(),
             EmailID : zod.string().email(),
@@ -67,7 +67,7 @@ try{
     const HashedPhoneNo = await bcrypt.hash(ParsedInput.data.AdminInfo[0].PhoneNo,10);
         
     const newAdmin = await Admin.create({
-        Admin_Username : ParsedInput.data.Admin_Username,
+        Username : ParsedInput.data.Username,
         Password : HashedPassword,
         AdminInfo : [{
             Name : ParsedInput.data.AdminInfo[0].Name,
@@ -104,23 +104,23 @@ try{
 }
 
 export const adminLogin = async(req,res) => {
-    const {Admin_Username,Password} = req.body;
+    const {Username,Password} = req.body;
 
     const InputSchema = zod.object({
-        Admin_Username : zod.string().min(8),
+        Username : zod.string().min(8),
         Password : zod.string().min(8)
     })
 
-    const ParsedInput = InputSchema.safeParse({Admin_Username,Password})
+    const ParsedInput = InputSchema.safeParse({Username,Password})
 
     if(ParsedInput.success){
         try{
-            const ExistingAdmin = await Admin.findOne({Admin_Username : ParsedInput.data.Admin_Username});
+            const ExistingAdmin = await Admin.findOne({Username : ParsedInput.data.Username});
             if(!ExistingAdmin){
                 res.status(404).json("Admin not registered ...");
             }
             const IsCorrectPassword = await bcrypt.compare(ParsedInput.data.Password,ExistingAdmin.Password);
-            const IsCorrectUsername = ParsedInput.data.Admin_Username === ExistingAdmin.Admin_Username;
+            const IsCorrectUsername = ParsedInput.data.Username === ExistingAdmin.Username;
 
             if(!IsCorrectPassword || !IsCorrectUsername){
                 res.status(403).json({

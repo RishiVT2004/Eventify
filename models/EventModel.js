@@ -40,7 +40,7 @@ const EventSchema = new mongoose.Schema({
         type : Date,
         default : Date.now
     },
-    "Registered_Users " : [
+    "Registered_Users" : [
         {
             "UserID" : {
                 type : mongoose.Schema.Types.ObjectId,

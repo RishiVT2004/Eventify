@@ -11,7 +11,7 @@ mongoose.connect(DataBase_URL)
 
 
 const AdminSchema = new mongoose.Schema({
-    Admin_Username : {
+    Username : {
         type : String,
         required : true,
     },
