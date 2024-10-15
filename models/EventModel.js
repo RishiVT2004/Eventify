@@ -8,61 +8,61 @@ mongoose.connect(URL)
 
 
 const EventSchema = new mongoose.Schema({
-    "Name" : {
+    Name : {
         type : String,
         required : true,
         unique : true
     },
-    "Date" : {
+    Date : {
         type : String,
         required : true,
     },
-    "Location" : {
+    Location : {
         type : String,
         required : true
     },
-    "Capacity" : {
+    Capacity : {
         type : Number,
         required : true,
         min : [20,'Capacity for event needs to be min 20']
     },
-    "Price" : {
+    Price : {
         type : Number,
         required : true,
         min : [99,'Price for each ticket must be min 99 Rupees']
     },
-    "Created_At" : {
+    Created_At : {
         type : Date,
         default : Date.now,
         immutable: true
     },
-    "Updated_At" : {
+    Updated_At : {
         type : Date,
         default : Date.now
     },
-    "Registered_Users" : [
+    Registered_Users : [
         {
-            "UserID" : {
+            UserID : {
                 type : mongoose.Schema.Types.ObjectId,
                 ref : 'User',
                 required : true,
                 immutable: true
             }
         },{
-            "User-Email" : {
+            UserEmail : {
                 type : String,
                 ref : 'User',
                 required : true
             }
         },{
-            "PaymentID" : {
+            PaymentID : {
                 type: String,
                 required: true,
                 unique : true,
                 immutable: true
             }
         },{
-            "BookingDate" : {
+            BookingDate : {
                 type: Date,
                 default: Date.now,
                 immutable: true

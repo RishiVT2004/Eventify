@@ -7,43 +7,43 @@ mongoose.connect(URL)
     .catch(err => console.error('Error connecting to database:', err.message)); 
 
 const PaymentSchema = new mongoose.Schema({
-    "UserID" : {
+    UserID : {
         type : mongoose.Schema.Types.ObjectId,
         ref  : 'User',
         required : true,
     },
-    "EventID" : {
+    EventID : {
         type : mongoose.Schema.Types.ObjectId,
         ref : 'Event',
         required : true
     },
-    "PaymentID" : {
+    PaymentID : {
         type : String,
         required : true,
         unique : true
     },
-    "PaymentTime" :{
+    PaymentTime :{
         type : Date,
         default : Date.now,
         immutable : true
     },
-    "Tickets" : {
+    Tickets : {
         type : Number,
         required : true,
-        min : 1,
-        max : 10
+        min : [1,'Min tickets to book is 1'],
+        max : [10,'Max tickets to book is 10']
     },
-    "AmountPaid" : {
+    AmountPaid : {
         type : Number,
         required : true,
         min : [99 , 'Min amount to be paid is 99']
     },
-    "PaymentMethod" : {
+    PaymentMethod : {
         type : String,
         required : true,
         enum : ['Net-Banking','UPI','Debit-Card']
     },
-    "PaymentStatus" : {
+    PaymentStatus : {
         type : String,
         required : true,
         enum : ['Pending','Success','Failed'],
