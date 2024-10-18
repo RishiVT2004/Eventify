@@ -23,15 +23,36 @@ export const getCurrentEvent = async(req,res) => {
     }
 }
 
+export const getEventDetails = async(req,res) => {
+    
+    const {eventID} = req.params
+    try{
+        const event = await Event.findById(eventID);
+
+        if(!event){
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        return res.status(200).json({ message: "Event details", event });
+    }
+    catch(err){
+        return res.status(500).json({ 
+            message: "Server Error",
+            error: err.message 
+        })
+    }
+}
+
 export const BookEvent = async(req,res) => {
     
     if(!req.user){
         return res.status(403).json({message : "Only User can book tickets for an event"})
     }
+    const UserID = req.user.id
     try{
         const {EventID} = req.params;
         const {tickets} = req.body;
-        const user = await User.findById(req.user.id);
+        const user = await User.findById(UserID);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -80,22 +101,23 @@ export const BookEvent = async(req,res) => {
        
 
 export const getUserRegisteredEvents = async(req,res) => {
-    const {UserID} = req.user.id;
     if(!req.user){
         return res.status(403).json({message : "Only User can book tickets for an event"})
     }
+
+    const UserID = req.user.id;
+
     try{
-        const registeredEvent = await Event.find({UserID})
-        console.log(UserID,registeredEvent)
+        const registeredEvent = await Event.find({_id : UserID}) // multile ids 
         if(!registeredEvent || registeredEvent.length === 0){
             return res.status(404).json({message  : "User has not registered in any event"})
         }
         
-        const eventList = registeredEvent.map(Event => {
+        const eventList = registeredEvent.map(event => { // reference to Event 
             return {
-                "eventID" : Event._id,
-                "EventName" : Event.Name,
-                "EventDate" : Event.Date
+                eventID : event._id,
+                EventName : event.Name,
+                EventDate : event.Date
             }
         })
         
@@ -114,23 +136,26 @@ export const getUserRegisteredEvents = async(req,res) => {
 }
 
 export const deleteBooking = async(req,res) => {
-    const {eventID} = req.params
     if(!req.user){
         return res.status(403).json({message : "Only User can book tickets for an event"})
     }
+    const {eventID} = req.params
+    const userID = req.user.id
     try{
-        const eventFromBookingIsToBeDeleted = await Event.findOne({_id : eventID})
+        const eventFromBookingIsToBeDeleted = await Event.findById(eventID)
         if(!eventFromBookingIsToBeDeleted){
             return res.status(404).json({ message: "Event not found" });
         }
-        const regiseredUser = eventFromBookingIsToBeDeleted['Registered_Users'].find(user => user.UserID.equals(req.user._id))
+        const regiseredUser = eventFromBookingIsToBeDeleted['Registered_Users'].find(user => 
+            user.UserID.equals(userID)
+        )
         if(!regiseredUser){
             return res.status(404).json({ message: "User is not registered to this event" });
         }
 
         await Event.findByIdAndUpdate(
             eventID,
-            {$pull : {Registered_User : {UserID : req.user._id}}},
+            {$pull : {Registered_User : {UserID : userID}}},
             {new : true}
         )
 
