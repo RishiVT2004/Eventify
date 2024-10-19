@@ -8,19 +8,19 @@ The Event Manager project is a comprehensive backend API designed for event book
 The application is launched from the <b> server.js </b> file, and it includes the following features:
 
 ## Features
-**User Authentication:** Secure signup and login functionalities with JWT-based authentication.
-**Event Browsing and Management:** Users can browse and book events, while admins can manage events.
-**Payment Integration:** Secure payment system using Razorpay.
-**Modular Design:** Routes and controllers are structured to ensure clean and scalable code organization.
+**1. User Authentication:** Secure signup and login functionalities with JWT-based authentication.<br>
+**2. Event Browsing and Management:** Users can browse and book events, while admins can manage events.<br>
+**3. Payment Integration:** Secure payment system using Razorpay.<br>
+**4. Modular Design:** Routes and controllers are structured to ensure clean and scalable code organization.<br>
 
 ## Technologies Used
 
-1.JavaScript: Core language for backend development.
-2.Node.js & Express.js: Frameworks for building the backend and handling routes, middleware, and APIs.
-3.MongoDB: NoSQL database for storing users, events, bookings, and payment information.
-4.Mongoose: ODM (Object Data Modeling) library for MongoDB integration.
-5.JWT (JsonWebTokens): For handling secure user authentication.
-6.Razorpay Payment Gateway: For processing payments during event booking.
+**1. JavaScript:** Core language for backend development.<br>
+**2. Node.js & Express.js:** Frameworks for building the backend and handling routes, middleware, and APIs.<br>
+**3. MongoDB:** NoSQL database for storing users, events, bookings, and payment information.<br>
+**4. Mongoose:** ODM (Object Data Modeling) library for MongoDB integration.<br>
+**5. JWT (JsonWebTokens):** For handling secure user authentication.<br>
+**6. Razorpay Payment Gateway:** For processing payments during event booking.<br>
 
 ## Prerequisites
 To run this project locally, ensure you have the following installed:
