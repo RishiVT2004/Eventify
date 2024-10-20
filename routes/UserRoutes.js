@@ -19,7 +19,7 @@ router.put('/updatePassword/',jwtAuth,changePassword); // update and change pass
 
 // event handler 
 router.get('/eventList',getCurrentEvent); // get lists of current event 
-router.get('/Info/:eventID',jwtAuth , getCurrentEvent) // gets all necessary info about a particular event 
+router.get('/event/:eventID',jwtAuth , getCurrentEvent) // gets all necessary info about a particular event 
 router.post('/book/:eventID',jwtAuth,BookEvent); // book ticket for an event 
 router.delete('/cancel/:bookingID',jwtAuth,deleteBooking) // cancel booking for an event 
 router.get('/registeredEvents',jwtAuth,getUserRegisteredEvents); // get list of event the user has bought ticket for 
@@ -31,4 +31,9 @@ router.post('/payment/confirm/:paymentID' , jwtAuth , confirmPayment) // confirm
 router.post('/payment/refund/:bookingID' , jwtAuth , refundPayment) // refund the money and cancel booking
 router.get('/payment/status/:paymentID' , jwtAuth , getPaymentStatus) // users to check the status of their payments
 router.get('/payment/user' , jwtAuth , listUserPayments) // This route enables users to view all their payment transactions
+
+// Event Reviews (to be implemented)
+router.post('/event/:eventID/review', jwtAuth, addEventReview); // Add a review for an event
+router.get('/event/:eventID/reviews', getEventReviews); // Fetch reviews for an event
+
 export default router;
