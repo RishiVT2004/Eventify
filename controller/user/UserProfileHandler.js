@@ -2,7 +2,6 @@ import User from '../../models/UserModel.js'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import zod from 'zod'
-import { updateEvent } from '../admin/AdminController_EventHandler.js'
 
 const InputSchema1 = zod.object({
     Username : zod.string().min(6),
@@ -11,6 +10,7 @@ const InputSchema1 = zod.object({
 })
 
 const InputSchema2 = zod.object({
+    EmailID : zod.string().email(),
     New_Password : zod.string().min(8)
 })
 
@@ -74,28 +74,22 @@ export const updateUserProfile = async(req,res) => {
 } 
 
 export const changePassword = async(req,res) => {
-    if(!req.user){
-        return res.status(403).json({message : "Only User can change respective info"})
+    const {EmailID,NewPassword} = req.body;
+    const ParsedInput = InputSchema2.safeParse(req.body)
+    if (!ParsedInput.success) {
+        return res.status(400).json({
+            message: 'Invalid input',
+            errors: ParsedInput.error.errors,
+        });
     }
     try{
-        const NewPassword = InputSchema2.safeParse(req.body)
-        if(!NewPassword.success){
-            return res.status(400).json({
-                message: "Invalid input credentials",
-                errors: NewPassword.error.errors 
-            })
-        }
-        const NewHashedPassword = await bcrypt.hash(NewPassword.data.New_Password,10)
-        const PasswordToUpdate = await User.findByIdAndUpdate(
-            req.user.id,
-            {"Password" : NewHashedPassword},
-            {new : true}
-        )
-        if(!PasswordToUpdate){
-            return res.status(404).json({ message: "User not found" });
-        }
-        res.status(200).json({ message: "Password updated successfully" });
+        const user = await User.findOne({ 'UserInfo.EmailID': ParsedInput.data.EmailID });
+        const HashedPassword = await bcrypt.hash(ParsedInput.data.New_Password,10)
 
+        user.Password = HashedPassword;
+        await user.save();
+
+        return res.status(200).json({ message: 'Password updated successfully' });
     }catch(err){
         res.status(500).json({ 
                 message: "Error updating profile",

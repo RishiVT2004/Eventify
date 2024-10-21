@@ -3,7 +3,16 @@ import BannedUser from '../../models/BannedUser.js'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import zod from 'zod'
+import nodemailer from 'nodemailer'
 const JWT_KEY = process.env.JWT_KEY
+
+const transporter = nodemailer.createTransport({
+    service : 'gmail',
+    auth : {
+        user : process.env.EMAIL_ID,
+        pass : process.env.EMAIL_PASSWORD
+    }
+})
 
 const calcAge = (dob) => {
     const birthDate = new Date(dob);
@@ -126,10 +135,28 @@ export const userLogin = async(req,res) => {
                 expiresIn : '1hr'
             })
 
-            res.status(202).json({
-                "message" : "User Login successful ",
-                "token" : token
+            const newEmailNotification = {
+                from : process.env.EMAIL_ID,
+                to : ExistingUser.UserInfo[0].EmailID,
+                subject : 'Successful Login Notification',
+                text : `Hello ${ExistingUser.UserInfo[0].Name},\n\nYou have successfully logged in to your account`
+            }
+
+            transporter.sendMail(newEmailNotification , (err,info) => {
+                if(err){
+                    return res.status(500).json({
+                        message: 'Login successful, but failed to send email notification.',
+                        error : err.message
+                    });
+                }else{
+                    console.log('email-sent',info.response)
+                    return res.status(202).json({
+                        message : "User Login successful and Notification sent to registered Email",
+                        token : token
+                    })
+                }
             })
+
              
         }catch(err){
             res.status(404).json({"error" : err.message})
