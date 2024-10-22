@@ -1,9 +1,15 @@
 import User from '../../models/UserModel.js'
 import Event from '../../models/EventModel.js'
 import Booking from '../../models/BookingModel.js'
-import jwt from 'jsonwebtoken'
-import bcrypt from 'bcryptjs'
-import zod from 'zod'
+import nodemailer from 'nodemailer'
+
+const transporter = nodemailer.createTransport({
+    service : 'gmail',
+    auth : {
+        user : process.env.EMAIL_ID,
+        pass : process.env.EMAIL_PASSWORD
+    }
+})
 
 export const getCurrentEvent = async(req,res) => {
     try{
@@ -86,10 +92,35 @@ export const BookEvent = async(req,res) => {
             return res.status(403).json({message  : "Booking Failed"})
         }
 
-        return res.status(200).json({
-            "message" : "Booking succesfull",
-            "booking details" : booking
+        const newEmailNotification = {
+            from : process.env.EMAIL_ID,
+            to : user.UserInfo[0].EmailID,
+            subject : 'Booking successful Notification',
+            text : `Hello ${ExistingUser.UserInfo[0].Name} \n\n 
+                    your booking for the Event -: ${ExistingUser.UserInfo[0].EmailID} \n\n + 
+                    is successful \n\n + 
+                    Details of booking : \n\n + 
+                    1. Event Name -> ${event.Name}\n+
+                    2. Event Date -> ${event.Date}\n+
+                    3. Event Location -> ${event.Location}\n+
+                    4. Tickets booked -> ${tickets}
+                    \n\n Please contact us for any other updates `
+        }
+
+        transporter.sendMail(newEmailNotification,(err) => {
+            if(err){
+                return res.status(500).json({
+                    message: 'Event booked successfully, but failed to send email notification.',
+                    error : err.message
+                });
+            }else{
+                return res.status(200).json({
+                    message : "Event Booked successfully and Notification sent to registered Email",
+                    token : token
+                })
+            }
         })
+
        
     }catch(err){
         return res.status(500).json({ 
@@ -139,10 +170,16 @@ export const deleteBooking = async(req,res) => {
     if(!req.user){
         return res.status(403).json({message : "Only User can book tickets for an event"})
     }
-    const {eventID} = req.params
+    const {bookingID} = req.params
     const userID = req.user.id
     try{
+        const booking = await Booking.findById(bookingID);
+        if (!booking) {
+            return res.status(404).json({ message: "Booking not found" });
+        }
+        const eventID = booking.EmailID
         const eventFromBookingIsToBeDeleted = await Event.findById(eventID)
+
         if(!eventFromBookingIsToBeDeleted){
             return res.status(404).json({ message: "Event not found" });
         }
@@ -153,13 +190,42 @@ export const deleteBooking = async(req,res) => {
             return res.status(404).json({ message: "User is not registered to this event" });
         }
 
+        const ticketBooked = booking.TicketQuantity;
+
         await Event.findByIdAndUpdate(
             eventID,
-            {$pull : {Registered_User : {UserID : userID}}},
+            {
+                $pull : {Registered_User : {UserID : userID}},
+                $inc : {Capacity : ticketBooked}
+            },
             {new : true}
         )
 
-        return res.status(200).json({ message: "Booking successfully deleted" });
+        await Booking.findByIdAndDelete(bookingID);
+        
+        const newEmailNotification = {
+            from : process.env.EMAIL_ID,
+            to : req.user.UserInfo[0].EmailID,
+            subject : 'Booking cancelled Notification',
+            text : `Hello ${ExistingUser.UserInfo[0].Name} \n\n+
+                    your booking for the Event -: ${eventFromBookingIsToBeDeleted.Name} has been succesfully cancelled \n\n + 
+                    We will refund you shortly,\n\n + 
+                    Please contact us for any other updates `
+        }
+
+        transporter.sendMail(newEmailNotification,(err) => {
+            if(err){
+                return res.status(500).json({
+                    message: 'Event booked cancelled successfully, but failed to send email notification.',
+                    error : err.message
+                });
+            }else{
+                return res.status(200).json({
+                    message : "Event Booked cancelled successfully and Notification sent to registered Email",
+                    token : token
+                })
+            }
+        })
 
     }catch(err){
         return res.status(500).json({ 

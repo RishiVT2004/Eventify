@@ -139,7 +139,8 @@ export const userLogin = async(req,res) => {
                 from : process.env.EMAIL_ID,
                 to : ExistingUser.UserInfo[0].EmailID,
                 subject : 'Successful Login Notification',
-                text : `Hello ${ExistingUser.UserInfo[0].Name},\n\nYou have successfully logged in to your account`
+                text : `Hello ${ExistingUser.UserInfo[0].Name},\n\nYou have successfully logged in to your account
+                        If this is not you please change your password immidiately`
             }
 
             transporter.sendMail(newEmailNotification , (err,info) => {

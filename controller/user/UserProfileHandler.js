@@ -2,6 +2,16 @@ import User from '../../models/UserModel.js'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import zod from 'zod'
+import nodemailer from 'nodemailer'
+
+const transporter = nodemailer.createTransport({
+    service : 'gmail',
+    auth : {
+        user : process.env.EMAIL_ID,
+        pass : process.env.EMAIL_PASSWORD
+    }
+})
+
 
 const InputSchema1 = zod.object({
     Username : zod.string().min(6),
@@ -74,6 +84,9 @@ export const updateUserProfile = async(req,res) => {
 } 
 
 export const changePassword = async(req,res) => {
+    if(!req.user){
+        return res.status(403).json({message : "Only User can change respective info"})
+    }
     const {EmailID,NewPassword} = req.body;
     const ParsedInput = InputSchema2.safeParse(req.body)
     if (!ParsedInput.success) {
@@ -89,7 +102,26 @@ export const changePassword = async(req,res) => {
         user.Password = HashedPassword;
         await user.save();
 
-        return res.status(200).json({ message: 'Password updated successfully' });
+        const newEmailNotification = {
+            from : process.env.EMAIL_ID,
+            to : user.UserInfo[0].EmailID,
+            subject : 'Password Reset Successful',
+            text : `Hello ${ExistingUser.UserInfo[0].Name},\n\nYou have successfully changed your password` 
+        }
+        transporter.sendMail(newEmailNotification , (err)=> {
+            if(err){
+                return res.status(500).json({
+                    message: 'Password changed successfully, but failed to send email notification.',
+                    error : err.message
+                });
+            }else{
+                return res.status(200).json({
+                    message : "User Password changed and Notification sent to registered Email",
+                    token : token
+                })
+            }
+        })
+
     }catch(err){
         res.status(500).json({ 
                 message: "Error updating profile",
