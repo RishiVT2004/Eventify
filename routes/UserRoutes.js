@@ -33,7 +33,7 @@ router.put('/updatePassword/',generalLimiter,changePassword); // update and chan
 
 // event handler 
 router.get('/eventList',generalLimiter,getCurrentEvent); // get lists of current event 
-router.get('/event/:eventID',generalLimiter,jwtAuth , getCurrentEvent) // gets all necessary info about a particular event 
+router.get('/event/:eventID',generalLimiter,jwtAuth ,getEventDetails) // gets all necessary info about a particular event 
 router.post('/book/:eventID',generalLimiter,jwtAuth,BookEvent); // book ticket for an event 
 router.delete('/cancel/:bookingID',generalLimiter,jwtAuth,deleteBooking) // cancel booking for an event 
 router.get('/registeredEvents',generalLimiter,jwtAuth,getUserRegisteredEvents); // get list of event the user has bought ticket for 

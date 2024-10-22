@@ -147,7 +147,8 @@ export const userLogin = async(req,res) => {
                 if(err){
                     return res.status(500).json({
                         message: 'Login successful, but failed to send email notification.',
-                        error : err.message
+                        error : err.message,
+                        token : token
                     });
                 }else{
                     console.log('email-sent',info.response)

@@ -87,7 +87,6 @@ export const changePassword = async(req,res) => {
     if(!req.user){
         return res.status(403).json({message : "Only User can change respective info"})
     }
-    const {EmailID,NewPassword} = req.body;
     const ParsedInput = InputSchema2.safeParse(req.body)
     if (!ParsedInput.success) {
         return res.status(400).json({
@@ -112,7 +111,8 @@ export const changePassword = async(req,res) => {
             if(err){
                 return res.status(500).json({
                     message: 'Password changed successfully, but failed to send email notification.',
-                    error : err.message
+                    error : err.message,
+                    token : token
                 });
             }else{
                 return res.status(200).json({

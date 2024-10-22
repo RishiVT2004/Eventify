@@ -50,22 +50,21 @@ export const getEventDetails = async(req,res) => {
 }
 
 export const BookEvent = async(req,res) => {
-    
     if(!req.user){
         return res.status(403).json({message : "Only User can book tickets for an event"})
     }
     const UserID = req.user.id
     try{
-        const {EventID} = req.params;
+        const {eventID} = req.params;
         const {tickets} = req.body;
+
         const user = await User.findById(UserID);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        
         const userEmailID = user.UserInfo[0].EmailID;
-
-        const event = await Event.findById(EventID)
+        const event = await Event.findById(eventID)
+ 
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
@@ -76,28 +75,12 @@ export const BookEvent = async(req,res) => {
             return res.status(403).json({message : "No Tickets availiable"})            
         }
         
-        event.Capacity -= tickets
-
-        event['Registered_Users'].push({
-            "UserID" : req.user.id,
-            "UserEmail" : userEmailID
-        })
-        const eventUpdate = await event.save();
-        const booking = await Booking.create({
-            "UserID" : req.user.id,
-            "Event" : EventID,
-            "TicketQuantity" : tickets
-        })
-        if(!eventUpdate || ! booking){
-            return res.status(403).json({message  : "Booking Failed"})
-        }
-
         const newEmailNotification = {
             from : process.env.EMAIL_ID,
             to : user.UserInfo[0].EmailID,
             subject : 'Booking successful Notification',
-            text : `Hello ${ExistingUser.UserInfo[0].Name} \n\n 
-                    your booking for the Event -: ${ExistingUser.UserInfo[0].EmailID} \n\n + 
+            text : `Hello ${user.UserInfo[0].Name} \n\n 
+                    your booking for the Event -: ${user.UserInfo[0].EmailID} \n\n + 
                     is successful \n\n + 
                     Details of booking : \n\n + 
                     1. Event Name -> ${event.Name}\n+
@@ -111,17 +94,25 @@ export const BookEvent = async(req,res) => {
             if(err){
                 return res.status(500).json({
                     message: 'Event booked successfully, but failed to send email notification.',
-                    error : err.message
+                    error : err.message,
                 });
-            }else{
-                return res.status(200).json({
-                    message : "Event Booked successfully and Notification sent to registered Email",
-                    token : token
-                })
             }
+            event.Capacity -= tickets
+            event.Registered_Users.push({
+                "UserID" : req.user.id,
+                "UserEmail" : userEmailID
+            })
+            const eventUpdate = event.save();
+        
+            if(!eventUpdate){
+                return res.status(403).json({message  : "Booking Failed"})
+            }
+
+            return res.status(200).json({
+                message: "Event booked successfully and notification sent to registered email."
+            });
         })
 
-       
     }catch(err){
         return res.status(500).json({ 
             message: "Server Error",
@@ -136,16 +127,17 @@ export const getUserRegisteredEvents = async(req,res) => {
         return res.status(403).json({message : "Only User can book tickets for an event"})
     }
 
-    const UserID = req.user.id;
+    const {userID} = req.user.id;
 
     try{
-        const registeredEvent = await Event.find({_id : UserID}) // multile ids 
+        const registeredEvent = await Event.find(Event.Registered_Users.UserID == userID)
         if(!registeredEvent || registeredEvent.length === 0){
             return res.status(404).json({message  : "User has not registered in any event"})
         }
         
         const eventList = registeredEvent.map(event => { // reference to Event 
             return {
+                UserID : event.Registered_Users,
                 eventID : event._id,
                 EventName : event.Name,
                 EventDate : event.Date
@@ -207,7 +199,7 @@ export const deleteBooking = async(req,res) => {
             from : process.env.EMAIL_ID,
             to : req.user.UserInfo[0].EmailID,
             subject : 'Booking cancelled Notification',
-            text : `Hello ${ExistingUser.UserInfo[0].Name} \n\n+
+            text : `Hello ${user.UserInfo[0].Name} \n\n+
                     your booking for the Event -: ${eventFromBookingIsToBeDeleted.Name} has been succesfully cancelled \n\n + 
                     We will refund you shortly,\n\n + 
                     Please contact us for any other updates `
@@ -222,7 +214,6 @@ export const deleteBooking = async(req,res) => {
             }else{
                 return res.status(200).json({
                     message : "Event Booked cancelled successfully and Notification sent to registered Email",
-                    token : token
                 })
             }
         })
