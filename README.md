@@ -1,40 +1,83 @@
 
-# Event Manager Website
+# Eventify: Event Management Backend API
 
-## About This Project
+## Table of Contents
+- [Project Overview](#project-overview)
+- [Features](#features)
+- [Technologies Used](#technologies-used)
+- [Installation](#installation)
+- [Future Improvements](#future-improvements)
+- [Usage](#usage)
 
-The Event Manager project is a comprehensive backend API designed for event booking and management. It allows users to browse, book, and manage events seamlessly, with the integration of the Razorpay payment gateway for secure and hassle-free transactions. The system is built with scalability in mind, following a modular structure to handle different functionalities such as user authentication, event management, and booking workflows. The project is currently a work in progress.
-
-The application is launched from the <b> server.js </b> file, and it includes the following features:
+## Project Overview
+Eventify is a backend API designed to handle the management of events, bookings, and payments. This project provides secure user authentication, event browsing, booking, and payment functionality using modern backend technologies. It's scalable and built with a modular structure to allow for easy future expansion.
 
 ## Features
-**1. User Authentication:** Secure signup and login functionalities with JWT-based authentication.<br>
-**2. Event Browsing and Management:** Users can browse and book events, while admins can manage events.<br>
-**3. Payment Integration:** Secure payment system using Razorpay.<br>
-**4. Modular Design:** Routes and controllers are structured to ensure clean and scalable code organization.<br>
+- User authentication using JWT
+- Event creation, browsing, and management
+- Secure payment gateway integration with Razorpay(to be implemented)
+- User and admin role separation
+- Email notifications for successful bookings
+- Zod input validation and bcrypt hashing for sensitive data storage
+- Book events with real-time seat availability checks.
 
 ## Technologies Used
+- Backend Framework: Node.js with Express.js
+- Database: MongoDB (with Mongoose ORM)
+- Authentication: JWT (JSON Web Tokens)
+- Validation: Zod for schema validation
+- Hashing : Bcrypt hashing for sensitive information 
+- Email Service: Nodemailer for email notifications
+- Payment Gateway: Razorpay integration for handling payments (to be implemented)
+- Deployment: (to be implemented)
 
-**1. JavaScript:** Core language for backend development.<br>
-**2. Node.js & Express.js:** Frameworks for building the backend and handling routes, middleware, and APIs.<br>
-**3. MongoDB:** NoSQL database for storing users, events, bookings, and payment information.<br>
-**4. Mongoose:** ODM (Object Data Modeling) library for MongoDB integration.<br>
-**5. JWT (JsonWebTokens):** For handling secure user authentication.<br>
-**6. Razorpay Payment Gateway:** For processing payments during event booking.<br>
-
-## Prerequisites
-To run this project locally, ensure you have the following installed:
-
-Node.js
-MongoDB
-Razorpay API Keys (for payment integration)
-
-## Project Structure
-The project follows a modular architecture for maintainability and scalability. Here is a brief overview of the folder structure:
+## Installation
+### 1. Clone the repository:
 ```
-/models               # Mongoose schemas for Users, Events, Bookings, Payments
-/routes               # API routes for Users, Events, Bookings, Payments
-/controllers          # Logic for handling API requests
-/middlewares          # JWT authentication and error-handling middleware
-server.js             # Entry point of the application
+git clone https://github.com/yourusername/eventify.git
+cd eventify
 ```
+### 2. Install dependencies:
+```
+npm install
+```
+
+### 3. Environment Variables<br>
+  - Create a .env file in the root of your project and add the following environment variables:
+```
+PORT=<your-port-number>
+URL=<your-mongodb-uri>
+JWT_KEY=<your-jwt-secret-key>
+EMAIL_ID=<your-email-id>
+EMAIL_PASSWORD=<your-email-password>(app passowrd , not gmail password)
+RAZORPAY_KEY_ID=<your-razorpay-key-id>
+RAZORPAY_KEY_SECRET=<your-razorpay-key-secret>
+```
+
+### 4. Database Setup<br>
+  - Make sure you have MongoDB installed and running locally or use a cloud service like MongoDB Atlas.<br>
+  - Set up the database URL in the .env file (MONGODB_URI).<br>
+  - The required collections (Users, Events, Bookings, Payments) will be automatically created when you start the server.
+
+### 5. Running the Server<br>
+  - Start the development server:
+```
+node server.js
+```
+or
+```
+nodemon server.js
+```
+
+## Future Improvements<br>
+1. Event Reviews and Ratings: Allow users to leave feedback and rate events.
+2. Razorpay Payment Getaway Integration
+3. Deploying on a cloud service 
+
+
+## Usage 
+1. Register or login as a user to browse events.
+2. Admins can create, update, or delete events using the respective API endpoints.
+3. Users can book events by sending a booking request.
+4. Payments can be processed through the Razorpay integration.
+5. After a successful booking, users will receive a confirmation email.
