@@ -38,7 +38,7 @@ router.post('/book/:eventID',generalLimiter,jwtAuth,BookEvent); // book ticket f
 router.delete('/cancel/:bookingID',generalLimiter,jwtAuth,deleteBooking) // cancel booking for an event 
 router.get('/registeredEvents',generalLimiter,jwtAuth,getUserRegisteredEvents); // get list of event the user has bought ticket for 
 
-// payment handler 
+// payment handler (to be implemented)
 
 router.post('/payment/initiate/:bookingID' ,generalLimiter, jwtAuth , initiatePayment) // initiating payment for bookingID
 router.post('/payment/confirm/:paymentID' ,generalLimiter, jwtAuth , confirmPayment) // confirm the payment 
@@ -46,8 +46,8 @@ router.post('/payment/refund/:bookingID' , generalLimiter,jwtAuth , refundPaymen
 router.get('/payment/status/:paymentID' , generalLimiter,jwtAuth , getPaymentStatus) // users to check the status of their payments
 router.get('/payment/user' , jwtAuth , generalLimiter,listUserPayments) // This route enables users to view all their payment transactions
 
-// Event Reviews (to be implemented)
-//router.post('/event/:eventID/review', jwtAuth, addEventReview); // Add a review for an event
-//router.get('/event/:eventID/reviews', getEventReviews); // Fetch reviews for an event
+//Event Reviews (to be implemented)
+router.post('/event/:eventID/PostReview', jwtAuth, addEventReview); // Add a review for an event
+router.get('/event/:eventID/GetReview', getEventReviews); // Fetch reviews for an event
 
 export default router;
