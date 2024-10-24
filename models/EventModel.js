@@ -39,42 +39,7 @@ const EventSchema = new mongoose.Schema({
     Updated_At : {
         type : Date,
         default : Date.now
-    },
-    Registered_Users : [
-        {
-            UserID : {
-                type : mongoose.Schema.Types.ObjectId,
-                ref : 'User',
-                required : true,
-                immutable: true
-            }
-        },{
-            UserEmail : {
-                type : String,
-                ref : 'User',
-                required : true
-            }
-        },{
-            PaymentID : {
-                type: String,
-                required: true,
-                unique : true,
-                immutable: true
-            }
-        },{
-            BookingDate : {
-                type: Date,
-                default: Date.now,
-                immutable: true
-            },
-        }
-    ]
-},{default : []})
-
-EventSchema.pre('save' , function(next){
-    this.Updated_At = Date.now();
-    next();
+    }
 })
-
 const Event = mongoose.model('Event',EventSchema)
 export default Event

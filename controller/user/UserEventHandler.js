@@ -80,7 +80,7 @@ export const BookEvent = async(req,res) => {
             to : user.UserInfo[0].EmailID,
             subject : 'Booking successful Notification',
             text : `Hello ${user.UserInfo[0].Name} \n\n 
-                    your booking for the Event -: ${user.UserInfo[0].EmailID} \n\n + 
+                    your booking for the Event -: ${event.Name} \n\n + 
                     is successful \n\n + 
                     Details of booking : \n\n + 
                     1. Event Name -> ${event.Name}\n+
