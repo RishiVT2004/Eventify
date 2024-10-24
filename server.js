@@ -3,10 +3,11 @@ import dotenv from 'dotenv';
 import adminRoutes from './routes/AdminRoute.js'; // Ensure the file extension is included
 import userRoutes from './routes/UserRoutes.js';
 import mongoose from 'mongoose';
+import cors from 'cors'
 dotenv.config();
 
 const app = express();  
-
+app.use(cors());
 app.use(express.json());
 app.use('/admin', adminRoutes);
 app.use('/user',userRoutes);
