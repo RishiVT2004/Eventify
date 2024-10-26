@@ -53,7 +53,7 @@ export const PostReview = async(req,res) => {
 
         const ParsedInput = InputSchema.safeParse(inputToValidate);
 
-        if (!ParsedInput.success) {
+        if(!ParsedInput.success) {
             return res.status(400).json({ message: 'Invalid input', errors: ParsedInput.error.errors });
         }
 
@@ -82,5 +82,24 @@ export const PostReview = async(req,res) => {
 }
 
 export const GetReview = async(req,res) => {
-    
+    const {eventID} = req.params;
+    try{
+        const ValidEvent = await Event.findById(eventID);
+        if(!ValidEvent){
+            return res.status(404).json({ message: "Event not found" });
+        }
+        const reviewsForEvent = await Feedback.find(ValidEvent.Feedbacks)
+        if(!reviewsForEvent){
+            return res.status(404).json({ message: "No feedbacks or review found for Event"});
+        }
+        res.status(200).json({
+            'Event_Name' : ValidEvent.Event_Name,
+            'Reviews' : reviewsForEvent 
+        })
+    }catch(err){
+        return res.status(500).json({
+            message: "Server Error",
+            error: err.message,
+        });
+    }
 }

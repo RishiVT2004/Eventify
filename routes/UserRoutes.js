@@ -47,8 +47,8 @@ router.post('/payment/refund/:bookingID' , generalLimiter,jwtAuth , refundPaymen
 router.get('/payment/status/:paymentID' , generalLimiter,jwtAuth , getPaymentStatus) // users to check the status of their payments
 router.get('/payment/user' , jwtAuth , generalLimiter,listUserPayments) // This route enables users to view all their payment transactions
 
-//Event Reviews (to be implemented)
+//Event Reviews 
 router.post('/event/:eventID/PostReview', jwtAuth, PostReview); // Add a review for an event
-//router.get('/event/:eventID/GetReview', getEventReviews); // Fetch reviews for an event
+router.get('/event/:eventID/GetReview', GetReview); // Fetch reviews for an event
 
 export default router;
