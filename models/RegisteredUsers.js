@@ -43,7 +43,7 @@ const RegisteredUserSchema = new mongoose.Schema({
         }     
     }
 ]
-},{default : {}})
+})
 
 const RegisteredUser = mongoose.model('RegisteredUsers',RegisteredUserSchema);
 export default RegisteredUser

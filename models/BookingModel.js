@@ -49,7 +49,7 @@ const BookingSchema = new mongoose.Schema({
             message: a => `${a.value} is not a valid payment amount, it must be at least 99 Rs`
         }
     }
-},{default : {}})
+})
 
 const Booking = mongoose.model('Booking',BookingSchema)
 export default Booking
