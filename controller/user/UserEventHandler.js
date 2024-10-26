@@ -36,7 +36,7 @@ export const getEventDetails = async(req,res) => {
         const event = await Event.findById(eventID);
 
         if(!event){
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({ message: "Event not found" });
         }
 
         return res.status(200).json({ message: "Event details", event });

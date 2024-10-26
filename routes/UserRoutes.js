@@ -5,7 +5,7 @@ import {userSignup,userLogin} from '../controller/user/UserLogin_SignpuControlle
 import { getUserProfile , updateUserProfile , changePassword} from "../controller/user/UserProfileHandler.js";
 import { getCurrentEvent , BookEvent , deleteBooking , getUserRegisteredEvents , getEventDetails} from "../controller/user/UserEventHandler.js";
 import { initiatePayment , confirmPayment , refundPayment , getPaymentStatus , listUserPayments} from "../controller/user/UserPaymentHandler.js";
-import { PostReview , GetReview } from "../controller/user/userReview.js"; 
+import { PostReview , GetReview } from "../controller/user/UserReview.js"; 
 import rateLimiter from "express-rate-limit";
 
 dotenv.config()
@@ -48,7 +48,7 @@ router.get('/payment/status/:paymentID' , generalLimiter,jwtAuth , getPaymentSta
 router.get('/payment/user' , jwtAuth , generalLimiter,listUserPayments) // This route enables users to view all their payment transactions
 
 //Event Reviews (to be implemented)
-//router.post('/event/:eventID/PostReview', jwtAuth, addEventReview); // Add a review for an event
+router.post('/event/:eventID/PostReview', jwtAuth, PostReview); // Add a review for an event
 //router.get('/event/:eventID/GetReview', getEventReviews); // Fetch reviews for an event
 
 export default router;
