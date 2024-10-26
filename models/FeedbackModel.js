@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import dotenv from 'dotenv'
-import { string } from "zod";
-dotenv.config()
+ dotenv.config()
 const URL = process.env.URL;
 
 mongoose.connect(URL)
@@ -37,7 +36,7 @@ const FeedbackSchema = new mongoose.Schema({
                 max : 5
             },
             Message : {
-                type : string,
+                type : String,
                 required : true,
                 max : 1000,
             }
@@ -46,5 +45,5 @@ const FeedbackSchema = new mongoose.Schema({
     ]
 })
 
-const Feedbacks = mongoose.model('Feedback',FeedbackSchema);
-export default Feedbacks
+const Feedback = mongoose.model('Feedback',FeedbackSchema);
+export default Feedback
