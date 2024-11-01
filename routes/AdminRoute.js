@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import { adminSignup,adminLogin,getAdminProfile} from '../controller/admin/AdminController_Login_Signup_Get.js';
 import { eventUserList,BanUser,UnbanUser,DeleteUser } from '../controller/admin/AdminController_UserHandler.js';
 import { createEvent , eventList , updateEvent , deleteEvent} from '../controller/admin/AdminController_EventHandler.js';
+import { EventAnalytics } from '../controller/admin/AdminEventAnalytics.js'; 
 import { jwtAuth } from '../middlewares/Auth.js';
 import rateLimiter from 'express-rate-limit'
 
@@ -41,7 +42,6 @@ router.put('/updateEvent/:eventID',generalLimiter,jwtAuth,updateEvent); // updat
 router.delete('/deleteEvent/:eventID',generalLimiter,jwtAuth,deleteEvent); // delete an event 
 
 // to be implemented
-//router.get('/event/:eventID/details', generalLimiter, jwtAuth, getEventDetails);
-//router.get('/event/:eventID/analytics', generalLimiter, jwtAuth, getEventAnalytics);  
+router.get('/event/:eventID/analytics', generalLimiter, jwtAuth, EventAnalytics);
 
 export default router;
