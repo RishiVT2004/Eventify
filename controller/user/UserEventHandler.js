@@ -97,21 +97,13 @@ export const BookEvent = async(req,res) => {
                     error : err.message,
                 });
             }
-            event.Capacity -= tickets
-            event.Registered_Users.push({
-                "UserID" : req.user.id,
-                "UserEmail" : userEmailID
-            })
-            const eventUpdate = event.save();
-        
-            if(!eventUpdate){
-                return res.status(403).json({message  : "Booking Failed"})
-            }
-
-            return res.status(200).json({
-                message: "Event booked successfully and notification sent to registered email."
-            });
         })
+
+        event.Tickets_Sold += tickets;
+        event.Capacity -= tickets;
+        event.save();
+
+        // to be updated how to save the info in database after payment route is complete
 
     }catch(err){
         return res.status(500).json({ 
