@@ -16,7 +16,7 @@ const AdminSchema = new mongoose.Schema({
         type : String,
         required : true,
     },
-    AdminInfo : [{
+    AdminInfo : {
         Name : {
             type : String,
             required : true,
@@ -43,7 +43,7 @@ const AdminSchema = new mongoose.Schema({
             required : true,
             unique : true
         }
-    }],
+    },
 })
 
 const Admin = mongoose.model('Admin',AdminSchema)

@@ -68,13 +68,13 @@ export const userSignup = async(req,res)=> {
             const NewUser = await User.create({
                 Username : ParsedInput.data.Username,
                 Password : HashedPassword,
-                UserInfo : [{
+                UserInfo : {
                     Name : ParsedInput.data.UserInfo[0].Name,
                     DOB : ParsedInput.data.UserInfo[0].DOB,
                     Gender : ParsedInput.data.UserInfo[0].Gender,
                     EmailID : ParsedInput.data.UserInfo[0].EmailID,
                     PhoneNo : HashedPhoneNo
-                }]
+                }
             })
 
             const token = jwt.sign({

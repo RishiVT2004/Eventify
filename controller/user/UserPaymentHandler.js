@@ -1,8 +1,5 @@
-
-
-
 export const initiatePayment = async(req,res) => {
-
+    
 }
 
 export const confirmPayment = async(req,res) => {

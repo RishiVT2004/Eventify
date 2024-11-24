@@ -20,7 +20,7 @@ const UserSchema = new mongoose.Schema({
         type : Boolean,
         default : false
     },
-    UserInfo : [{
+    UserInfo : {
         Name : {
             type : String,
             required : true,
@@ -47,7 +47,7 @@ const UserSchema = new mongoose.Schema({
             required : true,
             unique : true
         }
-    }],
+    },
 
 });
 

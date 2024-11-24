@@ -18,7 +18,7 @@ const RegisteredUserSchema = new mongoose.Schema({
         type : 'String',
         require : true
     },
-    UserList : [
+    UserList : 
     {
         UserID : {
             type : mongoose.Schema.Types.ObjectId,
@@ -42,7 +42,6 @@ const RegisteredUserSchema = new mongoose.Schema({
             ref : 'Payment'
         }     
     }
-]
 })
 
 const RegisteredUser = mongoose.model('RegisteredUsers',RegisteredUserSchema);

@@ -103,9 +103,9 @@ export const changePassword = async(req,res) => {
 
         const newEmailNotification = {
             from : process.env.EMAIL_ID,
-            to : user.UserInfo[0].EmailID,
+            to : user.UserInfo.EmailID,
             subject : 'Password Reset Successful',
-            text : `Hello ${ExistingUser.UserInfo[0].Name},\n\nYou have successfully changed your password` 
+            text : `Hello ${user.UserInfo[0].Name},\n\nYou have successfully changed your password` 
         }
         transporter.sendMail(newEmailNotification , (err)=> {
             if(err){
