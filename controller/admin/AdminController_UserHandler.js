@@ -96,7 +96,7 @@ export const DeleteUser = async(req,res) => {
             })
         }
 
-        await BannedUser.create({ email : user.UserInfo[0].EmailID})
+        await BannedUser.create({ email : user.UserInfo.EmailID})
 
         return res.status(200).json({"message" : "Deleted User Successfully"})
     }catch(err){

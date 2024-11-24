@@ -76,7 +76,7 @@ export const adminSignup = async (req, res) => {
     const newAdmin = await Admin.create({
       Username: ParsedInput.data.Username,
       Password: HashedPassword,
-      AdminInfo: [
+      AdminInfo: 
         {
           Name: ParsedInput.data.AdminInfo[0].Name,
           DOB: ParsedInput.data.AdminInfo[0].DOB,
@@ -84,7 +84,6 @@ export const adminSignup = async (req, res) => {
           EmailID: ParsedInput.data.AdminInfo[0].EmailID,
           PhoneNo: HashedPhoneNo,
         },
-      ],
     });
 
     // apply jwt signin here
