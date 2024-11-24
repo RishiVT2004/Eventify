@@ -15,7 +15,7 @@ const calcAge = (dob) => {
 export const adminSignup = async (req, res) => {
   try {
     const { Username, Password, AdminInfo } = req.body;
-    const email = AdminInfo[0].EmailID;
+    const email = AdminInfo.EmailID;
     const BanUser = await BannedUser.findOne({ email });
     if (BanUser) {
       return res.status(403).json({
@@ -27,8 +27,7 @@ export const adminSignup = async (req, res) => {
     const InputSchema = zod.object({
       Username: zod.string().min(8),
       Password: zod.string().min(8),
-      AdminInfo: zod.array(
-        zod.object({
+      AdminInfo: zod.object({
           Name: zod.string(),
           DOB: zod.string().refine((date) => !isNaN(Date.parse(date)), {
             message:
@@ -37,8 +36,7 @@ export const adminSignup = async (req, res) => {
           Gender: zod.string(),
           EmailID: zod.string().email(),
           PhoneNo: zod.string().length(10),
-        })
-      ),
+        }),
     });
 
     const ParsedInput = InputSchema.safeParse(req.body);
@@ -50,7 +48,7 @@ export const adminSignup = async (req, res) => {
       });
     }
 
-    const Age = calcAge(ParsedInput.data.AdminInfo[0].DOB);
+    const Age = calcAge(ParsedInput.data.AdminInfo.DOB);
     if (Age < 18) {
       return res.status(400).json({
         message: "You must be at least 18 years old to register as an admin.",
@@ -58,7 +56,7 @@ export const adminSignup = async (req, res) => {
     }
 
     // checking if admin exists
-    const CheckEmail = ParsedInput.data.AdminInfo[0].EmailID;
+    const CheckEmail = ParsedInput.data.AdminInfo.EmailID;
     const DoesAdminAlreadyExist = await Admin.findOne({
       "AdminInfo.EmailID": CheckEmail,
     });
@@ -69,7 +67,7 @@ export const adminSignup = async (req, res) => {
     // hashing
     const HashedPassword = await bcrypt.hash(ParsedInput.data.Password, 10);
     const HashedPhoneNo = await bcrypt.hash(
-      ParsedInput.data.AdminInfo[0].PhoneNo,
+      ParsedInput.data.AdminInfo.PhoneNo,
       10
     );
 
@@ -78,10 +76,10 @@ export const adminSignup = async (req, res) => {
       Password: HashedPassword,
       AdminInfo: 
         {
-          Name: ParsedInput.data.AdminInfo[0].Name,
-          DOB: ParsedInput.data.AdminInfo[0].DOB,
-          Gender: ParsedInput.data.AdminInfo[0].Gender,
-          EmailID: ParsedInput.data.AdminInfo[0].EmailID,
+          Name: ParsedInput.data.AdminInfo.Name,
+          DOB: ParsedInput.data.AdminInfo.DOB,
+          Gender: ParsedInput.data.AdminInfo.Gender,
+          EmailID: ParsedInput.data.AdminInfo.EmailID,
           PhoneNo: HashedPhoneNo,
         },
     });
