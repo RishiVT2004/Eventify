@@ -62,18 +62,20 @@ export const BookEvent = async(req,res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        const userEmailID = user.UserInfo[0].EmailID;
+        const userEmailID = user.UserInfo.EmailID;
         const event = await Event.findById(eventID)
  
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
 
-        if(event.Capacity < tickets){
+        if(event.Tickets_Availiable < tickets){
             return res.status(403).json({message : "Not enought Tickets availiable"})
-        }else if(event.Capacity == 0){
+        }else if(event.Tickets_Availiable == 0){
             return res.status(403).json({message : "No Tickets availiable"})            
         }
+
+        // implement processing payement part in payement route 
         
         const newEmailNotification = {
             from : process.env.EMAIL_ID,
@@ -99,8 +101,7 @@ export const BookEvent = async(req,res) => {
             }
         })
 
-        event.Tickets_Sold += tickets;
-        event.Capacity -= tickets;
+        event.Tickets_Availiable -= tickets;
         event.save();
 
         // to be updated how to save the info in database after payment route is complete
@@ -167,10 +168,10 @@ export const deleteBooking = async(req,res) => {
         if(!eventFromBookingIsToBeDeleted){
             return res.status(404).json({ message: "Event not found" });
         }
-        const regiseredUser = eventFromBookingIsToBeDeleted['Registered_Users'].find(user => 
+        const registeredUser = eventFromBookingIsToBeDeleted['Registered_Users'].find(user => 
             user.UserID.equals(userID)
         )
-        if(!regiseredUser){
+        if(!registeredUser){
             return res.status(404).json({ message: "User is not registered to this event" });
         }
 
@@ -186,12 +187,14 @@ export const deleteBooking = async(req,res) => {
         )
 
         await Booking.findByIdAndDelete(bookingID);
+
+        // implement refunding part in payment section 
         
         const newEmailNotification = {
             from : process.env.EMAIL_ID,
-            to : req.user.UserInfo[0].EmailID,
+            to : req.user.UserInfo.EmailID,
             subject : 'Booking cancelled Notification',
-            text : `Hello ${user.UserInfo[0].Name} \n\n+
+            text : `Hello ${User.UserInfo.Name} \n\n+
                     your booking for the Event -: ${eventFromBookingIsToBeDeleted.Name} has been succesfully cancelled \n\n + 
                     We will refund you shortly,\n\n + 
                     Please contact us for any other updates `

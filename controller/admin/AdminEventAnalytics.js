@@ -18,8 +18,8 @@ export const EventAnalytics = async(req,res) => {
             eventName : event.Name,
             eventDate : event.Date,
             eventLocation : event.Location,
-            ticketsSold : event.Tickets_Sold,
-            remainingCapacity : event.Capacity,
+            ticketsSold : event.Capacity - event.Tickets_Availiable,
+            remainingCapacity : event.Tickets_Availiable,
             Revenue : (event.Price)*(ticketsSold),
             Attendees : regiseredUser.map(user => ({
                 name : user.UserName,
