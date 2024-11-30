@@ -1,13 +1,14 @@
 import Event from "../../models/EventModel.js"
 import zod from 'zod'
 
+// all fields are now optional to update 
 const InputSchema = zod.object({
-    Name : zod.string().max(40),
-    Date : zod.string(),
-    Location : zod.string(),
-    Capacity : zod.number().min(20),
-    Price : zod.number().min(99)
-})
+    Name : zod.string().max(40).optional(),
+    Date : zod.string().optional(),
+    Location : zod.string().optional(),
+    Capacity : zod.number().min(20).optional(),
+    Price : zod.number().min(99).optional()
+}).partial()
 
 export const createEvent = async(req,res) => {
     try{
@@ -75,12 +76,14 @@ export const eventList = async(req,res) => {
 }
 
 export const updateEvent = async(req,res) => {
+    const {eventID} = req.params
     try{
         if(!req.admin){
             return res.status(403).json({ message: "Only admins can create events" });
         }
 
         const ParsedInput = InputSchema.safeParse(req.body)
+        
         if(!ParsedInput.success){
             return res.status(400).json({
                 message : "Invalid Event Credentials... Try again",
@@ -89,18 +92,36 @@ export const updateEvent = async(req,res) => {
         }
 
         const {Name,Date,Location,Capacity,Price} = ParsedInput.data;
-        const {eventID} = req.params
+        const updatedFields = {}
+        if(Name){
+            updatedFields.Name = Name;
+        }
+        if(Date){
+            updatedFields.Date = Date;
+        }
+        if(Location){
+            updatedFields.Location = Location;
+        }
+        if(Capacity){
+            updatedFields.Capacity = Capacity;
+        }
+        if(Price){
+            updatedFields.Price = Price;
+        }
+        
+        //check for duplicate named event 
+        if(updatedFields.Name){
+            const checkDuplicateEventName = await Event.findOne({Name : updatedFields.Name});
+            if(checkDuplicateEventName && checkDuplicateEventName._id.toString() != eventID){
+                return res.status(400).json({
+                    message: "Event name already exists. Please choose a different name.",
+                });
+            }
+        } 
 
-
-        const UpdatedEvent = await Event.findOneAndUpdate(
-            {_id : eventID},
-            {
-                "Name" : Name,
-                "Date" : Date,
-                "Location" : Location,
-                "Capacity" : Capacity,
-                "Price" : Price
-            },
+        const UpdatedEvent = await Event.findByIdAndUpdate(
+            eventID,
+            updatedFields,
             {new : true}
         )
         if(!UpdatedEvent){
