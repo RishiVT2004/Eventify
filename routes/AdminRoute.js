@@ -42,6 +42,6 @@ router.put('/updateEvent/:eventID',generalLimiter,jwtAuth,updateEvent); // updat
 router.delete('/deleteEvent/:eventID',generalLimiter,jwtAuth,deleteEvent); // delete an event 
 
 // to be implemented
-router.get('/event/:eventID/analytics', generalLimiter, jwtAuth, EventAnalytics);
+router.get('/event/analytics/:eventID', generalLimiter, jwtAuth, EventAnalytics);
 
 export default router;

@@ -8,23 +8,27 @@ export const EventAnalytics = async(req,res) => {
     try{
         const {eventID} = req.params;
         const event = await Event.findById(eventID);
-        const regiseredUser = await RegisteredUser.findById(eventID)
+        //const regiseredUser = await RegisteredUser.findById(eventID)
 
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
 
+        const soldTickets = event.Capacity - event.Tickets_Availiable
+        
         const eventAnalytics = {
-            eventName : event.Name,
-            eventDate : event.Date,
-            eventLocation : event.Location,
-            ticketsSold : event.Capacity - event.Tickets_Availiable,
-            remainingCapacity : event.Tickets_Availiable,
-            Revenue : (event.Price)*(ticketsSold),
+            "Event Name" : event.Name,
+            "Event Date" : event.Date,
+            "Event Location" : event.Location,
+            "Tickets Sold" : soldTickets,
+            "Remaining Tickets" : event.Tickets_Availiable,
+            "Revenue" : (event.Price)*(soldTickets),
+            /*
             Attendees : regiseredUser.map(user => ({
                 name : user.UserName,
                 email : user.EmailID,
             }))
+            */
         }
         return res.status(200).json(eventAnalytics);
     }catch(err){

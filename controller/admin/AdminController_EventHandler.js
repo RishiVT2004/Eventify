@@ -37,7 +37,8 @@ export const createEvent = async(req,res) => {
             "Date" : ParsedInput.data.Date,
             "Location" : ParsedInput.data.Location,
             "Capacity" : ParsedInput.data.Capacity,
-            "Price" : ParsedInput.data.Price
+            "Price" : ParsedInput.data.Price,
+            "Tickets_Availiable" : ParsedInput.data.Capacity
         })
 
         return res.status(201).json({
@@ -93,6 +94,12 @@ export const updateEvent = async(req,res) => {
 
         const {Name,Date,Location,Capacity,Price} = ParsedInput.data;
         const updatedFields = {}
+
+        const DoesEventExist = await Event.findById(eventID)
+        if(!DoesEventExist){
+            return res.status(404).json({ message: "Event not found" });
+        }
+
         if(Name){
             updatedFields.Name = Name;
         }
@@ -102,12 +109,21 @@ export const updateEvent = async(req,res) => {
         if(Location){
             updatedFields.Location = Location;
         }
-        if(Capacity){
-            updatedFields.Capacity = Capacity;
-        }
         if(Price){
             updatedFields.Price = Price;
         }
+        if(Capacity){
+            // check if updated capacity is not less than ticket sold and update availiable ticket
+            const TicketSoldAlready = UpdatedEvent.Capacity - UpdatedEvent.Tickets_Availiable
+            if(TicketSoldAlready > Capacity){
+                return res.status(400).json({
+                    message: "Cannot reduce capacity below tickets already sold."
+                });
+            }
+            updatedFields.Capacity = Capacity;
+            updatedFields.Tickets_Availiable = Capacity - TicketSoldAlready
+        }
+
         
         //check for duplicate named event 
         if(updatedFields.Name){
@@ -121,9 +137,15 @@ export const updateEvent = async(req,res) => {
 
         const UpdatedEvent = await Event.findByIdAndUpdate(
             eventID,
-            updatedFields,
+            {
+            ...updatedFields,
+            // set ticket availiable to new Capacity 
+            Tickets_Availiable : updatedFields.Capacity ?? updatedFields.Tickets_Availiable,
+            },
             {new : true}
         )
+
+
         if(!UpdatedEvent){
             return res.status(500).json({
                 error : "Unable to find event with the given id"
