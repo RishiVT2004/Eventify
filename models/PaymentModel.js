@@ -16,6 +16,10 @@ const PaymentSchema = new mongoose.Schema({
         type : mongoose.Schema.Types.ObjectId,
         ref : 'Event',
         required : true
+    },BookingID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Booking',
+        required: true,
     },
     PaymentID : {
         type : String,
@@ -46,7 +50,7 @@ const PaymentSchema = new mongoose.Schema({
     PaymentStatus : {
         type : String,
         required : true,
-        enum : ['Pending','Success','Failed'],
+        enum : ['Pending','Success','Failed','Refunded'],
         default : 'Pending' 
     }
 },{timestamps : true}) // sutomatically creates a createdat and updatedat fields 

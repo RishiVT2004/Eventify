@@ -29,13 +29,13 @@ export const PostReview = async(req,res) => {
         }
 
         const InputSchema = zod.object({
-            eventID : zod.String(),
-            eventName : zod.String(),
+            eventID : zod.string(),
+            eventName : zod.string(),
             Feedbacks : zod.array(zod.object({
                 UserID : zod.string(),
                 UserName : zod.string(),
-                Ratings : zod.Number(),
-                Message : zod.String()
+                Ratings : zod.number(),
+                Message : zod.string()
             }))
         })
 
