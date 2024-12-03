@@ -22,11 +22,6 @@ const PaymentSchema = new mongoose.Schema({
         required : true,
         unique : true
     },
-    PaymentTime :{
-        type : Date,
-        default : Date.now,
-        immutable : true
-    },
     Tickets : {
         type : Number,
         required : true,
@@ -36,7 +31,12 @@ const PaymentSchema = new mongoose.Schema({
     AmountPaid : {
         type : Number,
         required : true,
-        min : [99 , 'Min amount to be paid is 99']
+        validate : {
+            validator : function(v){
+                return v > 0;
+            },
+            message : 'Amount paid must be greater than 0' // handles -ve input 
+        }
     },
     PaymentMethod : {
         type : String,
@@ -49,7 +49,7 @@ const PaymentSchema = new mongoose.Schema({
         enum : ['Pending','Success','Failed'],
         default : 'Pending' 
     }
-})
+},{timestamps : true}) // sutomatically creates a createdat and updatedat fields 
 
 const Payment = mongoose.model('Payment',PaymentSchema)
 
