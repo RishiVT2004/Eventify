@@ -2,7 +2,15 @@ import User from '../../models/UserModel.js'
 import Event from '../../models/EventModel.js'
 import Booking from '../../models/BookingModel.js'
 import nodemailer from 'nodemailer'
+import Razorpay from 'razorpay'
 
+// razorpay instance 
+const razorpayInstance = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+})
+
+// transponder instance 
 const transporter = nodemailer.createTransport({
     service : 'gmail',
     auth : {
@@ -53,16 +61,20 @@ export const BookEvent = async(req,res) => {
     if(!req.user){
         return res.status(403).json({message : "Only User can book tickets for an event"})
     }
-    const UserID = req.user.id
+    const userID = req.user.id
     try{
         const {eventID} = req.params;
         const {tickets} = req.body;
 
-        const user = await User.findById(UserID);
+        if (!tickets || tickets <= 0) {
+            return res.status(400).json({ message: "Invalid ticket quantity." });
+        }
+
+        const user = await User.findById(userID);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        const userEmailID = user.UserInfo.EmailID;
+        
         const event = await Event.findById(eventID)
  
         if (!event) {
@@ -75,13 +87,32 @@ export const BookEvent = async(req,res) => {
             return res.status(403).json({message : "No Tickets availiable"})            
         }
 
+        const amount = tickets*event.Price
+        const option = {
+            amount : amount,
+            currency : "INR",
+            receipt : `receipt_${eventID}_${userID}`,
+            payement_capture : 1 
+        }
+
+        const order = await razorpayInstance.orders.create(option)
+
         // implement processing payement part in payement route 
         
+
+        const newBooking = await Booking.create({
+            UserID : userID,
+            EventID : eventID,
+            Tickets : tickets,
+            Amount : amount/100,
+            PaymentID : order.id
+        })
+
         const newEmailNotification = {
             from : process.env.EMAIL_ID,
-            to : user.UserInfo[0].EmailID,
+            to : user.UserInfo.EmailID,
             subject : 'Booking successful Notification',
-            text : `Hello ${user.UserInfo[0].Name} \n\n 
+            text : `Hello ${user.UserInfo.Name} \n\n 
                     your booking for the Event -: ${event.Name} \n\n + 
                     is successful \n\n + 
                     Details of booking : \n\n + 
@@ -103,6 +134,14 @@ export const BookEvent = async(req,res) => {
 
         event.Tickets_Availiable -= tickets;
         event.save();
+        newBooking.save();
+
+        return res.status(201).json({
+            success: true,
+            order_id: order.id,
+            amount: order.amount,
+            currency: order.currency,
+        });
 
         // to be updated how to save the info in database after payment route is complete
 

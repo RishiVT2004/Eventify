@@ -30,26 +30,26 @@ const BookingSchema = new mongoose.Schema({
     },
     PaymentID : {
         type : String,
-        required : true,
+        required : false, // not required at time of booking 
         unique : true
     },
-    TicketQuantity : {
+    Tickets : {
         type : Number,
         required : true,
         min : [1,'Min 1 ticket needs to be booked'],
         max : [10,'Max 10 tickets can be booked']
     },
-    AmountPaid : {
+    Amount : {
         type : Number,
         required : true,
         validate : {
             validator : function(val){
-                return val >= 99;
+                return val >= 0;
             },
             message: a => `${a.value} is not a valid payment amount, it must be at least 99 Rs`
         }
     }
-})
+},{timestamps : true})
 
 const Booking = mongoose.model('Booking',BookingSchema)
 export default Booking
