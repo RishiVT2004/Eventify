@@ -15,13 +15,13 @@ export const jwtAuth = async(req,res,next) => {
     const token = req.headers['authorization'];
 
     if (!token) {
-        return res.status(401).json({ error:  ErrorTypes.wrongFormat});
+        return res.status(401).json({ error:  ErrorTypes.nullToken});
     }
-
-    const DerivedToken = token.split(' ')[1]; // extract token from bearer
-    if (!DerivedToken) {
-        return res.status(401).json({ error: ErrorTypes.nullToken});
+    const tokenPair = token.split(' ');
+    if(tokenPair.length !== 2 || tokenPair[0] !== 'Bearer'){
+        return res.status(401).json({ error: ErrorTypes.wrongFormat });
     }
+    const DerivedToken = tokenPair[1]; // extract token from bearer
 
     // veryfying token 
     try{

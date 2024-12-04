@@ -30,7 +30,7 @@ router.post('/login',authLimiter,userLogin);
 // profile handler
 router.get('/profile/',generalLimiter,jwtAuth,getUserProfile);
 router.put('/updateProfile/',generalLimiter,jwtAuth,updateUserProfile); // update user info 
-router.put('/updatePassword/',generalLimiter,changePassword); // update and change password 
+router.put('/updatePassword/',generalLimiter,jwtAuth,changePassword); // update and change password 
 
 // event handler 
 router.get('/eventList',generalLimiter,getCurrentEvent); // get lists of current event 

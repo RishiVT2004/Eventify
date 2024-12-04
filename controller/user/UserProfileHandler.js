@@ -21,13 +21,13 @@ const InputSchema1 = zod.object({
 
 const InputSchema2 = zod.object({
     EmailID : zod.string().email(),
-    New_Password : zod.string().min(8)
+    NewPassword : zod.string().min(8)
 })
 
 export const getUserProfile = async(req,res) => {
     const userID = req.user.id
     const userProfile = await User.findOne({_id : userID})
-
+   
     if(!userProfile){
        return res.status(404).json({
            message : "User Not Found"
@@ -36,7 +36,7 @@ export const getUserProfile = async(req,res) => {
    
    res.status(200).json({
        message: "User profile fetched successfully",
-       userInfo : userProfile
+       userProfile
    });
 }
 
@@ -87,40 +87,47 @@ export const changePassword = async(req,res) => {
     if(!req.user){
         return res.status(403).json({message : "Only User can change respective info"})
     }
-    const ParsedInput = InputSchema2.safeParse(req.body)
-    if (!ParsedInput.success) {
+    const ParsedInput = InputSchema2.safeParse(req.body);
+    if(!ParsedInput.success) {
         return res.status(400).json({
             message: 'Invalid input',
             errors: ParsedInput.error.errors,
         });
     }
     try{
+        
         const user = await User.findOne({ 'UserInfo.EmailID': ParsedInput.data.EmailID });
-        const HashedPassword = await bcrypt.hash(ParsedInput.data.New_Password,10)
+        if(!user){
+            return res.status(403).json({error : 'User dosent exist'})
+        }
+        const HashedPassword = await bcrypt.hash(ParsedInput.data.NewPassword,10)
 
         user.Password = HashedPassword;
-        await user.save();
 
         const newEmailNotification = {
             from : process.env.EMAIL_ID,
             to : user.UserInfo.EmailID,
             subject : 'Password Reset Successful',
-            text : `Hello ${user.UserInfo[0].Name},\n\nYou have successfully changed your password` 
+            text : `Hello ${user.UserInfo.Name},\n\nYou have successfully changed your password` 
         }
-        transporter.sendMail(newEmailNotification , (err)=> {
-            if(err){
+        console.log(newEmailNotification)
+
+        transporter.sendMail(newEmailNotification, (err, info) => {
+            if (err) {
+                console.error('Error sending email:', err);  // Improved error logging
                 return res.status(500).json({
                     message: 'Password changed successfully, but failed to send email notification.',
-                    error : err.message,
-                    token : token
+                    error: err.message,
+                    token: token, // Ensure token is passed correctly
                 });
             }else{
-                return res.status(200).json({
-                    message : "User Password changed and Notification sent to registered Email",
-                    token : token
-                })
+                return res.status(201).json({
+                    message: "Password updated and Notification sent to Email",
+                }); 
             }
-        })
+        });
+        
+            
 
     }catch(err){
         res.status(500).json({ 
