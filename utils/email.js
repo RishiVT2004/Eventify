@@ -1,12 +1,26 @@
-import Razorpay from 'razorpay';
+import nodemailer from 'nodemailer';
 
-export const razorpayInstance = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET,
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_ID,
+        pass: process.env.EMAIL_PASSWORD,
+    },
 });
 
-export const verifyPayment = (paymentDetails, order) => {
-    // Implement Razorpay's checksum or signature verification logic
-    // Example: Razorpay utility for signature verification can be used
-    return true; // Replace with actual verification logic
-};
+export const sendEmailNotification = async (to, subject, text) => {
+    const mailOptions = {
+        from: process.env.EMAIL_ID,
+        to,
+        subject,
+        text,
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('Email sent successfully');
+    } catch (error) {
+        console.error('Error sending email:', error.message);
+        throw new Error('Email notification failed');
+    }
+}
