@@ -20,6 +20,8 @@ export const PostReview = async(req,res) => {
         const UserName = user.Username
         const {ratings , feedback} = req.body;
 
+        // implement a feature here such that only the user who have registered for event can post review 
+
         if(!ratings || !feedback){
             return res.status(400).json({message : 'Incomplete Rating or Feedback field ... please fill them'});
         }

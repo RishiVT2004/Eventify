@@ -1,23 +1,11 @@
+import dotenv from 'dotenv'
+dotenv.config();
 import User from '../../models/UserModel.js'
 import Event from '../../models/EventModel.js'
 import Booking from '../../models/BookingModel.js'
-import nodemailer from 'nodemailer'
-import Razorpay from 'razorpay'
+import { sendEmailNotification } from '../../utils/email.js';
+import { razorpayInstance } from '../../utils/razorpay.js';
 
-// razorpay instance 
-const razorpayInstance = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
-})
-
-// transponder instance 
-const transporter = nodemailer.createTransport({
-    service : 'gmail',
-    auth : {
-        user : process.env.EMAIL_ID,
-        pass : process.env.EMAIL_PASSWORD
-    }
-})
 
 export const getCurrentEvent = async(req,res) => {
     try{
@@ -108,33 +96,12 @@ export const BookEvent = async(req,res) => {
             PaymentID : order.id
         })
 
-        const newEmailNotification = {
-            from : process.env.EMAIL_ID,
-            to : user.UserInfo.EmailID,
-            subject : 'Booking successful Notification',
-            text : `Hello ${user.UserInfo.Name} \n\n 
-                    your booking for the Event -: ${event.Name} \n\n + 
-                    is successful \n\n + 
-                    Details of booking : \n\n + 
-                    1. Event Name -> ${event.Name}\n+
-                    2. Event Date -> ${event.Date}\n+
-                    3. Event Location -> ${event.Location}\n+
-                    4. Tickets booked -> ${tickets}
-                    \n\n Please contact us for any other updates `
-        }
-
-        transporter.sendMail(newEmailNotification,(err) => {
-            if(err){
-                return res.status(500).json({
-                    message: 'Event booked successfully, but failed to send email notification.',
-                    error : err.message,
-                });
-            }
-        })
 
         event.Tickets_Availiable -= tickets;
         event.save();
         newBooking.save();
+
+        // send confirmation email here
 
         return res.status(201).json({
             success: true,
@@ -229,28 +196,7 @@ export const deleteBooking = async(req,res) => {
 
         // implement refunding part in payment section 
         
-        const newEmailNotification = {
-            from : process.env.EMAIL_ID,
-            to : req.user.UserInfo.EmailID,
-            subject : 'Booking cancelled Notification',
-            text : `Hello ${User.UserInfo.Name} \n\n+
-                    your booking for the Event -: ${eventFromBookingIsToBeDeleted.Name} has been succesfully cancelled \n\n + 
-                    We will refund you shortly,\n\n + 
-                    Please contact us for any other updates `
-        }
-
-        transporter.sendMail(newEmailNotification,(err) => {
-            if(err){
-                return res.status(500).json({
-                    message: 'Event booked cancelled successfully, but failed to send email notification.',
-                    error : err.message
-                });
-            }else{
-                return res.status(200).json({
-                    message : "Event Booked cancelled successfully and Notification sent to registered Email",
-                })
-            }
-        })
+        // send confirmation email here 
 
     }catch(err){
         return res.status(500).json({ 

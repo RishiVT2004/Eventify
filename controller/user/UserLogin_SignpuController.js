@@ -4,15 +4,8 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import zod from 'zod'
 import nodemailer from 'nodemailer'
+import { sendEmailNotification } from '../../utils/email.js'
 const JWT_KEY = process.env.JWT_KEY
-
-const transporter = nodemailer.createTransport({
-    service : 'gmail',
-    auth : {
-        user : process.env.EMAIL_ID,
-        pass : process.env.EMAIL_PASSWORD
-    }
-})
 
 const calcAge = (dob) => {
     const birthDate = new Date(dob);
@@ -97,6 +90,7 @@ export const userSignup = async(req,res)=> {
                 expiresIn : '1hr'
             })
 
+            // implement an email notification here..
             return res.status(202).json({
                 "message" : "User Signup successful ",
                 "token" : token
@@ -148,29 +142,10 @@ export const userLogin = async(req,res) => {
                 expiresIn : '1hr'
             })
 
-            const newEmailNotification = {
-                from : process.env.EMAIL_ID,
-                to : ExistingUser.UserInfo.EmailID,
-                subject : 'Successful Login Notification',
-                text : `Hello ${ExistingUser.UserInfo.Name},\n\nYou have successfully logged in to your account
-                        If this is not you please change your password immidiately`
-            }
-
-            transporter.sendMail(newEmailNotification , (err,info) => {
-                if(err){
-                    return res.status(500).json({
-                        message: 'Login successful, but failed to send email notification.',
-                        error : err.message,
-                        token : token
-                    });
-                }else{
-                    return res.status(202).json({
-                        message : "User Login successful and Notification sent to registered Email",
-                        token : token
-                    })
-                }
+            return res.status(202).json({
+                message : "User Login successful",
+                token : token
             })
-
              
         }catch(err){
             res.status(404).json({"error" : err.message})

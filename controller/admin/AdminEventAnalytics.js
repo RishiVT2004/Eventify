@@ -15,6 +15,7 @@ export const EventAnalytics = async(req,res) => {
         }
 
         const soldTickets = event.Capacity - event.Tickets_Availiable
+        const netRevenue = (event.Price)*soldTickets
         
         const eventAnalytics = {
             "Event Name" : event.Name,
@@ -22,7 +23,7 @@ export const EventAnalytics = async(req,res) => {
             "Event Location" : event.Location,
             "Tickets Sold" : soldTickets,
             "Remaining Tickets" : event.Tickets_Availiable,
-            "Revenue" : (event.Price)*(soldTickets),
+            "Revenue Generated" : netRevenue,
             /*
             Attendees : regiseredUser.map(user => ({
                 name : user.UserName,
