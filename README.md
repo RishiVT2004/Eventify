@@ -91,8 +91,8 @@ Input data validation using Zod.
 ### 8. 🔐 Password Security
 Bcrypt securely hashes user passwords.
 
-### 9. 📈 Scalable Design
-Modular architecture allows for effortless feature additions.
+### 9. 🌟 User Feedback System
+Modular design ensures seamless integration and easy expansion of feedback features.
 
 ## 💻 Technologies Used
 
