@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import zod from "zod";
 import mongoose from "mongoose";
 const JWT_KEY = process.env.JWT_KEY;
+import { sendEmailNotification } from "../../utils/email.js";
 
 const calcAge = (dob) => {
   const birthDate = new Date(dob);
@@ -28,15 +29,14 @@ export const adminSignup = async (req, res) => {
       Username: zod.string().min(8),
       Password: zod.string().min(8),
       AdminInfo: zod.object({
-          Name: zod.string(),
-          DOB: zod.string().refine((date) => !isNaN(Date.parse(date)), {
-            message:
-              "Invalid date format , date format must be year--month--day",
-          }),
-          Gender: zod.string(),
-          EmailID: zod.string().email(),
-          PhoneNo: zod.string().length(10),
+        Name: zod.string(),
+        DOB: zod.string().refine((date) => !isNaN(Date.parse(date)), {
+          message: "Invalid date format , date format must be year--month--day",
         }),
+        Gender: zod.string(),
+        EmailID: zod.string().email(),
+        PhoneNo: zod.string().length(10),
+      }),
     });
 
     const ParsedInput = InputSchema.safeParse(req.body);
@@ -74,14 +74,13 @@ export const adminSignup = async (req, res) => {
     const newAdmin = await Admin.create({
       Username: ParsedInput.data.Username,
       Password: HashedPassword,
-      AdminInfo: 
-        {
-          Name: ParsedInput.data.AdminInfo.Name,
-          DOB: ParsedInput.data.AdminInfo.DOB,
-          Gender: ParsedInput.data.AdminInfo.Gender,
-          EmailID: ParsedInput.data.AdminInfo.EmailID,
-          PhoneNo: HashedPhoneNo,
-        },
+      AdminInfo: {
+        Name: ParsedInput.data.AdminInfo.Name,
+        DOB: ParsedInput.data.AdminInfo.DOB,
+        Gender: ParsedInput.data.AdminInfo.Gender,
+        EmailID: ParsedInput.data.AdminInfo.EmailID,
+        PhoneNo: HashedPhoneNo,
+      },
     });
 
     // apply jwt signin here
@@ -93,6 +92,16 @@ export const adminSignup = async (req, res) => {
       JWT_KEY,
       { expiresIn: "1hr" }
     );
+
+    try {
+      await sendEmailNotification(
+        NewUser.UserInfo.EmailID,
+        "Welcome to Eventify",
+        `Hello ${NewUser.UserInfo.Name},\n\nYour admin account has been successfully created. Welcome aboard!\n\nRegards,\nTeam Eventify`
+      );
+    } catch (err) {
+      return res.status(500).json({ error: "failed to send email" });
+    }
 
     return res.status(201).json({
       message: "Admin registered successfully!",
@@ -128,7 +137,8 @@ export const adminLogin = async (req, res) => {
         ParsedInput.data.Password,
         ExistingAdmin.Password
       );
-      const IsCorrectUsername = ParsedInput.data.Username === ExistingAdmin.Username;
+      const IsCorrectUsername =
+        ParsedInput.data.Username === ExistingAdmin.Username;
 
       if (!IsCorrectPassword || !IsCorrectUsername) {
         return res.status(403).json({

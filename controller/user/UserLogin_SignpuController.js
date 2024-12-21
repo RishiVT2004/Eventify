@@ -3,7 +3,6 @@ import BannedUser from '../../models/BannedUser.js'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import zod from 'zod'
-import nodemailer from 'nodemailer'
 import { sendEmailNotification } from '../../utils/email.js'
 const JWT_KEY = process.env.JWT_KEY
 
@@ -91,6 +90,16 @@ export const userSignup = async(req,res)=> {
             })
 
             // implement an email notification here..
+
+            try{
+                await sendEmailNotification(
+                    NewUser.UserInfo.EmailID,
+                    "Welcome to Eventify",
+                    `Hello ${NewUser.UserInfo.Name},\n\nYour user account has been successfully created. Welcome aboard!\n\nRegards,\nTeam Eventify`
+                )
+            }catch(err){
+                return res.status(500).json({"error" : "failed to send email"})
+            }
             return res.status(202).json({
                 "message" : "User Signup successful ",
                 "token" : token
