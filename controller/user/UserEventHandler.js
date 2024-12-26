@@ -45,14 +45,15 @@ export const getEventDetails = async(req,res) => {
     }
 }
 
-export const BookEvent = async(req,res) => {
-    if(!req.user){
-        return res.status(403).json({message : "Only User can book tickets for an event"})
+export const BookEvent = async (req, res) => {
+    if (!req.user) {
+        return res.status(403).json({ message: "Only User can book tickets for an event" });
     }
-    const userID = req.user.id
-    try{
-        const {eventID} = req.params;
-        const {tickets} = req.body;
+    
+    const userID = req.user.id;
+    try {
+        const { eventID } = req.params;
+        const { tickets } = req.body;
 
         if (!tickets || tickets <= 0) {
             return res.status(400).json({ message: "Invalid ticket quantity." });
@@ -62,66 +63,62 @@ export const BookEvent = async(req,res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        
-        const event = await Event.findById(eventID)
- 
+
+        const event = await Event.findById(eventID);
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
 
-        if(event.Tickets_Availiable < tickets){
-            return res.status(403).json({message : "Not enought Tickets availiable"})
-        }else if(event.Tickets_Availiable == 0){
-            return res.status(403).json({message : "No Tickets availiable"})            
+        if (event.Tickets_Availiable < tickets) {
+            return res.status(403).json({ message: "Not enough Tickets available" });
+        } else if (event.Tickets_Availiable === 0) {
+            return res.status(403).json({ message: "No Tickets available" });
         }
 
-        const amount = tickets*event.Price
-        const option = { // razorpay payment details 
-            amount : amount, // in paise 
-            currency : "INR",
-            receipt : `receipt_${eventID}_${userID}`,
-            payement_capture : 1 // set to 1 in the order creation options, indicates that the payment should be captured automatically after it has been authorized
-        }
-
-        const order = await razorpayInstance.orders.create(option);
-
-        // new booking record 
+        // Create a new booking record
+        const amount = tickets * event.Price; // Amount in paise
         const newBooking = await Booking.create({
-            UserID : userID,
-            EventID : eventID,
-            Tickets : tickets,
-            Amount : amount/100, // in rs 
-            PaymentID : order.id
-        })
+            UserID: userID,
+            EventID: eventID,
+            Tickets: tickets,
+            Amount: amount / 100, // Store amount in INR
+            PaymentID: 'null' // Initially set to pending until payment is processed
+        });
 
-
+        // Update available tickets for the event
         event.Tickets_Availiable -= tickets;
         await event.save();
 
-        // send confirmation email here
-        const emailReciever = user.UserInfo.EmailID();
-        const emailSubject = `Booking Confirmation for Event ${event.Name}`;
-        const emailText = `Dear ${user.Username},\n\nThank you for booking ${tickets} ticket(s) for ${event.Name}.
-        \nYour order ID is ${order.id}.\nTotal Amount: ₹${amount / 100}\n\n
-        Best Regards\nTeam Eventify`
+        // Call initiatePayment to process the payment
+        const paymentResponse = await initiatePayment(newBooking._id, amount, user);
 
-        await sendEmailNotification(emailReciever,emailSubject,emailText);
+        // Check if payment was successful
+        if (paymentResponse.success) {
+            // Send confirmation email here
+            const emailReceiver = user.UserInfo.EmailID; // Assuming EmailID is a string property
+            const emailSubject = `Booking Confirmation for Event ${event.Name}`;
+            const emailText = `Dear ${user.Username},\n\nThank you for booking ${tickets} ticket(s) for ${event.Name}.\nYour booking ID is ${newBooking._id}.\nTotal Amount: ₹${amount / 100}\n\nBest Regards,\nTeam Eventify`;
 
-        return res.status(201).json({
-            success: true,
-            order_id: order.id,
-            amount: amount/100,
-            currency: order.currency,
-        });
+            await sendEmailNotification(emailReceiver, emailSubject, emailText);
 
+            return res.status(201).json({
+                success: true,
+                order_id: paymentResponse.order_id,
+                amount: amount / 100,
+                currency: paymentResponse.currency,
+                message: "Booking created successfully and payment processed."
+            });
+        } else {
+            return res.status(400).json({ message: "Payment processing failed." });
+        }
 
-    }catch(err){
-        return res.status(500).json({ 
+    } catch (err) {
+        return res.status(500).json({
             message: "Server Error",
-            error: err.message 
-        })
+            error: err.message
+        });
     }
-}
+};
        
 
 export const getUserRegisteredEvents = async(req,res) => {
