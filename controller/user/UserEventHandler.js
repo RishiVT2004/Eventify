@@ -76,41 +76,44 @@ export const BookEvent = async(req,res) => {
         }
 
         const amount = tickets*event.Price
-        const option = {
-            amount : amount,
+        const option = { // razorpay payment details 
+            amount : amount, // in paise 
             currency : "INR",
             receipt : `receipt_${eventID}_${userID}`,
-            payement_capture : 1 
+            payement_capture : 1 // set to 1 in the order creation options, indicates that the payment should be captured automatically after it has been authorized
         }
 
-        const order = await razorpayInstance.orders.create(option)
+        const order = await razorpayInstance.orders.create(option);
 
-        // implement processing payement part in payement route 
-        
-
+        // new booking record 
         const newBooking = await Booking.create({
             UserID : userID,
             EventID : eventID,
             Tickets : tickets,
-            Amount : amount/100,
+            Amount : amount/100, // in rs 
             PaymentID : order.id
         })
 
 
         event.Tickets_Availiable -= tickets;
-        event.save();
-        newBooking.save();
+        await event.save();
 
         // send confirmation email here
+        const emailReciever = user.UserInfo.EmailID();
+        const emailSubject = `Booking Confirmation for Event ${event.Name}`;
+        const emailText = `Dear ${user.Username},\n\nThank you for booking ${tickets} ticket(s) for ${event.Name}.
+        \nYour order ID is ${order.id}.\nTotal Amount: ₹${amount / 100}\n\n
+        Best Regards\nTeam Eventify`
+
+        await sendEmailNotification(emailReciever,emailSubject,emailText);
 
         return res.status(201).json({
             success: true,
             order_id: order.id,
-            amount: order.amount,
+            amount: amount/100,
             currency: order.currency,
         });
 
-        // to be updated how to save the info in database after payment route is complete
 
     }catch(err){
         return res.status(500).json({ 

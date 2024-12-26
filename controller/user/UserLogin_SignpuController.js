@@ -88,9 +88,6 @@ export const userSignup = async(req,res)=> {
             },JWT_KEY,{
                 expiresIn : '1hr'
             })
-
-            // implement an email notification here..
-
             try{
                 await sendEmailNotification(
                     NewUser.UserInfo.EmailID,
