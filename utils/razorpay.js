@@ -19,13 +19,7 @@ export const verifyPayment = (paymentDetails) => {
         .update(`${razorpay_order_id}--${razorpay_payment_id}`)
         .digest('hex');
 
-        if(generateSignnature === razorpay_signature){
-            return res.status(200).json({
-                "message" : "payment verification successful"
-            });
-        }else{
-            return res.status(400).json({"message" : "payement verification failed"});
-        }
+        return generateSignnature === razorpay_signature // return boolean
     }catch(err){
         return res.status(500).json({"Error veryfing razorpay payment signature" : err.message()});
     }   
