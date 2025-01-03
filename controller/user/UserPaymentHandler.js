@@ -1,8 +1,6 @@
-import User from "../../models/UserModel"
-import Event from "../../models/EventModel"
-import Payment from "../../models/PaymentModel"
-import Booking from "../../models/BookingModel"
-import { verifyPayment } from "../../utils/razorpay"
+import Booking from "../../models/BookingModel.js";
+import User from "../../models/UserModel.js";
+import { verifyPayment } from "../../utils/razorpay.js"
 
 export const initiatePayment = async(req,res,bookingID,amount,user) => {
     try{
