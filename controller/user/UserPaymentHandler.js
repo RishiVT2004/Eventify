@@ -53,7 +53,20 @@ export const confirmPayment = async(req,res) => {
 }
 
 export const refundPayment = async(req,res) => {
+    try {
+        const {bookingID} = req.params;
+        
+        const booking = await Booking.findById(bookingID);
+        if (!booking) {
+            return res.status(404).json({ message: "Booking not found" });
+        }
 
+        if (booking.Status !== "Confirmed") {
+            return res.status(400).json({ message: "Only confirmed bookings can be refunded" });
+        }
+    }catch(err){
+        return res.status(500).json({ message: "Internal Server Error", error: err.message });
+    }
 }
 
 export const getPaymentStatus = async (req, res) => {
