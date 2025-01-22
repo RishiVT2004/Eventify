@@ -82,7 +82,8 @@ export const BookEvent = async (req, res) => {
             EventID: eventID,
             Tickets: tickets,
             Amount: amount / 100, // Store amount in INR
-            PaymentID: 'null' // Initially set to pending until payment is processed
+            PaymentID: 'null', // Initially set to pending until payment is processed
+            Status : "Pending"
         });
 
         // Update available tickets for the event
@@ -90,15 +91,16 @@ export const BookEvent = async (req, res) => {
         await event.save();
 
         // Call initiatePayment to process the payment
-        const paymentResponse = await initiatePayment(newBooking._id, amount, user);
+        const paymentResponse = await initiatePayment(req,res,newBooking._id, amount, user);
 
         // Check if payment was successful
         if (paymentResponse.success) {
-            // Send confirmation email here
+            // Send confirmation email if payment is successful here
             const emailReceiver = user.UserInfo.EmailID; // Assuming EmailID is a string property
             const emailSubject = `Booking Confirmation for Event ${event.Name}`;
-            const emailText = `Dear ${user.Username},\n\nThank you for booking ${tickets} ticket(s) for ${event.Name}.\nYour booking ID is ${newBooking._id}.\nTotal Amount: ₹${amount / 100}\n\nBest Regards,\nTeam Eventify`;
-
+            const emailText = `Dear ${user.Username},\n\nThank you for booking ${tickets} ticket(s) for ${event.Name}.
+            \nYour booking ID is ${newBooking._id}.\nTotal Amount: ₹${amount / 100}\n\nBest Regards,\nTeam Eventify`;
+            
             await sendEmailNotification(emailReceiver, emailSubject, emailText);
 
             return res.status(201).json({

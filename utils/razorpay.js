@@ -6,15 +6,16 @@ export const razorpayInstance = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
+// razorpay server responds with a unique id 
 export const createOrder = async(options) => {
     try{
         order = await razorpayInstance.orders.create(options);
         return order;
     }catch(err){
-        res.status(500).json({
+        return res.status(500).json({
             message:'Error creating Razorpay order:', 
             error: err.message 
-        })
+        });
     }
 }
 export const verifyPayment = (paymentDetails) => {

@@ -1,6 +1,6 @@
 import Booking from "../../models/BookingModel.js";
 import Payment from "../../models/PaymentModel.js" 
-import { verifyPayment } from "../../utils/razorpay.js"
+import { createOrder , verifyPayment } from "../../utils/razorpay.js"
 
 export const initiatePayment = async(req,res,bookingID,amount,user) => { // where we will call this from 
     try{
@@ -17,36 +17,42 @@ export const initiatePayment = async(req,res,bookingID,amount,user) => { // wher
         // Creating instance of new Razorpay order 
 
         const option = {
-            amount : amount*100,
+            amount : amount*100, // amount tracked in paise 
             currency : "INR",
             reciept : `reciept_${bookingID}_${user._id}`,
             payment_capture : 1
         }
 
-        // create and verify the order 
+        // create new order for razorpay instance 
+        const neworder = await createOrder(option);
         
+        // Update payment model 
+        payment.PaymentID = neworder.id;
+        await payment.save();
+
+        // Update booking model 
+        booking.PaymentID = neworder.id;
+        booking.Status = "Pending";
+        await booking.save();
+
+        return res.status(200).json({
+            message : "Payment initiated successfully",
+            order_id: neworder.id, 
+            amount: neworder.amount/100, // generates in rs 
+            currency: neworder.currency,
+        });
 
 
     }catch(err){
-        return res.status(500).json({ message: "Internal Server Error", error: err.message });
+        return res.status(500).json({ 
+            message: "Internal Server Error", error: err.message
+        });
     }
 }
 
 export const confirmPayment = async(req,res) => {
     try{
-        const { razorpay_payment_id, razorpay_order_id, razorpay_signature, bookingID } = req.body;
-
-        const isPaymentVerified = verifyPayment({razorpay_payment_id,razorpay_order_id,razorpay_signature});
-        if(!isPaymentVerified){
-            return res.status(400).json({ message: "Payment verification failed." });
-        }
-
-        // find booking id in database and update status 
-
-        bookingID.PaymentID = razorpay_payment_id;
-        bookingID.Status = "Confirmed"; // Payment Successful
-        await Booking.save();
-        return res.status(200).json({ message: "Payment confirmed successfully." });
+      
 
     }catch(err){
         return res.status(500).json({ message: "Internal Server Error", error: err.message });
@@ -55,16 +61,7 @@ export const confirmPayment = async(req,res) => {
 
 export const refundPayment = async(req,res) => {
     try {
-        const {bookingID} = req.params;
-        
-        const booking = await Booking.findById(bookingID);
-        if (!booking) {
-            return res.status(404).json({ message: "Booking not found" });
-        }
-
-        if (booking.Status !== "Confirmed") {
-            return res.status(400).json({ message: "Only confirmed bookings can be refunded" });
-        }
+       
     }catch(err){
         return res.status(500).json({ message: "Internal Server Error", error: err.message });
     }
