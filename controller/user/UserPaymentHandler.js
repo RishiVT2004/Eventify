@@ -1,30 +1,31 @@
 import Booking from "../../models/BookingModel.js";
-import User from "../../models/UserModel.js";
+import Payment from "../../models/PaymentModel.js" 
 import { verifyPayment } from "../../utils/razorpay.js"
 
-export const initiatePayment = async(req,res,bookingID,amount,user) => {
+export const initiatePayment = async(req,res,bookingID,amount,user) => { // where we will call this from 
     try{
         const booking = await Booking.findById(bookingID);
+
+        const payment = new Payment({
+            UserID : user._id,
+            EventID : booking.EventID,
+            BookingID : booking._id,
+            Tickets : booking.Tickets,
+            AmountPaid : amount,
+        })
+
+        // Creating instance of new Razorpay order 
+
         const option = {
-            amount: amount * 100, // Amount in paise
-            currency: "INR",
-            receipt: `receipt_${bookingID}_${user.id}`,
-            payment_capture: 1 // Automatically capture payment
-        };
-        // Create order with Razorpay
-        const order = await razorpayInstance.orders.create(option);
+            amount : amount*100,
+            currency : "INR",
+            reciept : `reciept_${bookingID}_${user._id}`,
+            payment_capture : 1
+        }
 
-        // Update the booking with Payment ID
-        booking.PaymentID = order.id;
-        booking.Status = "Pending"; // Set status to Pending until payment confirmation
-        await booking.save();
+        // create and verify the order 
+        
 
-        return res.status(200).json({
-            message: "Payment initiated successfully.",
-            order_id: order.id,
-            amount: order.amount / 100, // Convert back to INR for response
-            currency: order.currency,
-        });
 
     }catch(err){
         return res.status(500).json({ message: "Internal Server Error", error: err.message });

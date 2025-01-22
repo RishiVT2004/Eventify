@@ -45,7 +45,8 @@ const PaymentSchema = new mongoose.Schema({
     PaymentMethod : {
         type : String,
         required : true,
-        enum : ['Net-Banking','UPI','Debit-Card']
+        enum : ['Net-Banking','UPI','Debit-Card'],
+        default : ""
     },
     PaymentStatus : {
         type : String,
