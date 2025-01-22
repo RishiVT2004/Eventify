@@ -50,14 +50,47 @@ export const initiatePayment = async(req,res,bookingID,amount,user) => { // wher
     }
 }
 
-export const confirmPayment = async(req,res) => {
-    try{
-      
-
-    }catch(err){
-        return res.status(500).json({ message: "Internal Server Error", error: err.message });
+export const confirmPayment = async (req, res, paymentData) => {
+    try {
+        const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = paymentData;
+  
+        // Verify payment signature
+        const isValidPayment = await verifyPayment({
+            razorpay_payment_id,
+            razorpay_order_id,
+            razorpay_signature,
+        });
+  
+        if(!isValidPayment) {
+            return res.status(400).json({ message: "Payment Verification Failed" });
+        }
+  
+        // Find the corresponding booking
+        const booking = await Booking.findOne({ PaymentID: razorpay_order_id });
+        if(!booking){
+            return res.status(404).json({ message: "Booking not found." });
+        }
+  
+        // Check if booking is already confirmed
+        if(booking.Status === 'Confirmed'){
+            return res.status(200).json({ message: "Booking is already confirmed" });
+        }
+  
+        // Update booking status
+        booking.Status = "Confirmed";
+        await booking.save();
+  
+        // Update Payment model (if it exists)
+        const payment = await Payment.findOne({ BookingID: booking._id });
+        payment.Status = "Confirmed";
+        await payment.save();
+  
+        return res.status(200).json({ message: "Payment confirmed successfully." });
+    } catch (err) {
+      console.error("Error confirming payment:", err);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
-}
+  };
 
 export const refundPayment = async(req,res) => {
     try {

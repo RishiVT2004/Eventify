@@ -4,7 +4,8 @@ import User from '../../models/UserModel.js'
 import Event from '../../models/EventModel.js'
 import Booking from '../../models/BookingModel.js'
 import { sendEmailNotification } from '../../utils/email.js';
-import { razorpayInstance } from '../../utils/razorpay.js';
+import { initiatePayment , confirmPayment } from './UserPaymentHandler.js';
+import { createOrder,verifyPayment } from '../../utils/razorpay.js';
 
 
 export const getCurrentEvent = async(req,res) => {
@@ -95,21 +96,32 @@ export const BookEvent = async (req, res) => {
 
         // Check if payment was successful
         if (paymentResponse.success) {
-            // Send confirmation email if payment is successful here
-            const emailReceiver = user.UserInfo.EmailID; // Assuming EmailID is a string property
-            const emailSubject = `Booking Confirmation for Event ${event.Name}`;
-            const emailText = `Dear ${user.Username},\n\nThank you for booking ${tickets} ticket(s) for ${event.Name}.
-            \nYour booking ID is ${newBooking._id}.\nTotal Amount: ₹${amount / 100}\n\nBest Regards,\nTeam Eventify`;
-            
-            await sendEmailNotification(emailReceiver, emailSubject, emailText);
-
-            return res.status(201).json({
-                success: true,
-                order_id: paymentResponse.order_id,
-                amount: amount / 100,
-                currency: paymentResponse.currency,
-                message: "Booking created successfully and payment processed."
+            // check paymemt confirmation 
+            const isPaymentConfirmed = await confirmPayment(req,res,{
+                razorpay_payment_id : paymentResponse.razorpay_payment_id,
+                payment_order_id : paymentResponse.payment_order_id,
+                razorpay_signature : paymentResponse.razorpay_signature
             });
+
+            if(isPaymentConfirmed.success){
+                 // Send confirmation email if payment is successful here
+                const emailReceiver = user.UserInfo.EmailID; // Assuming EmailID is a string property
+                const emailSubject = `Booking Confirmation for Event ${event.Name}`;
+                const emailText = `Dear ${user.Username},\n\nThank you for booking ${tickets} ticket(s) for ${event.Name}.
+                \nYour booking ID is ${newBooking._id}.\nTotal Amount: ₹${amount / 100}\n\nBest Regards,\nTeam Eventify`;
+                
+                await sendEmailNotification(emailReceiver, emailSubject, emailText);
+    
+                return res.status(201).json({
+                    success: true,
+                    order_id: paymentResponse.order_id,
+                    amount: amount / 100,
+                    currency: paymentResponse.currency,
+                    message: "Booking created successfully and payment processed."
+                });
+            }else{
+                return res.status(400).json({ message: "Payment confirmation failed." });
+            }
         } else {
             return res.status(400).json({ message: "Payment processing failed." });
         }
