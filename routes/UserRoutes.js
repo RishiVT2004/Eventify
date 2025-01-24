@@ -30,11 +30,11 @@ router.get('/registeredEvents',generalLimiter,jwtAuth,getUserRegisteredEvents); 
 
 // payment handler (to be implemented)
 
-router.post('/payment/initiate/:bookingID' ,generalLimiter, jwtAuth , initiatePayment) // initiating payment for bookingID
+router.post('/payment/initiate/:eventID' ,generalLimiter, jwtAuth , initiatePayment) // initiating payment for the event 
 router.post('/payment/confirm/:paymentID' ,generalLimiter, jwtAuth , confirmPayment) // confirm the payment 
 router.post('/payment/refund/:bookingID' , generalLimiter,jwtAuth , refundPayment) // refund the money and cancel booking
 router.get('/payment/status/:paymentID' , generalLimiter,jwtAuth , getPaymentStatus) // users to check the status of their payments
-router.get('/payment/user' , jwtAuth , generalLimiter,listUserPayments) // This route enables users to view all their payment transactions
+router.get('/payment/user/:userID' , jwtAuth , generalLimiter,listUserPayments) // This route enables users to view all their payment transactions
 
 //Event Reviews 
 router.post('/event/:eventID/PostReview',generalLimiter,jwtAuth, PostReview); // Add a review for an event

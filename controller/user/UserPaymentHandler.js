@@ -92,9 +92,15 @@ export const confirmPayment = async (req, res, paymentData) => {
     }
   };
 
-export const refundPayment = async(req,res) => {
+export const refundPayment = async(req,res,bookingID) => {
+    if (!req.user) {
+        return res.status(403).json({ message: "Only User can book tickets for an event" });
+    }
+    const userID = req.user.id;
     try {
        
+
+
     }catch(err){
         return res.status(500).json({ message: "Internal Server Error", error: err.message });
     }

@@ -4,8 +4,9 @@ import User from '../../models/UserModel.js'
 import Event from '../../models/EventModel.js'
 import Booking from '../../models/BookingModel.js'
 import { sendEmailNotification } from '../../utils/email.js';
-import { initiatePayment , confirmPayment } from './UserPaymentHandler.js';
+import { initiatePayment , confirmPayment ,refundPayment} from './UserPaymentHandler.js';
 import { createOrder,verifyPayment } from '../../utils/razorpay.js';
+import SendmailTransport from 'nodemailer/lib/sendmail-transport/index.js';
 
 
 export const getCurrentEvent = async(req,res) => {
@@ -175,43 +176,50 @@ export const deleteBooking = async(req,res) => {
     if(!req.user){
         return res.status(403).json({message : "Only User can book tickets for an event"})
     }
-    const {bookingID} = req.params
-    const userID = req.user.id
+    const userID = req.user.id;
     try{
-        const booking = await Booking.findById(bookingID);
-        if (!booking) {
-            return res.status(404).json({ message: "Booking not found" });
-        }
-        const eventID = booking.EmailID
-        const eventFromBookingIsToBeDeleted = await Event.findById(eventID)
-
-        if(!eventFromBookingIsToBeDeleted){
-            return res.status(404).json({ message: "Event not found" });
-        }
-        const registeredUser = eventFromBookingIsToBeDeleted['Registered_Users'].find(user => 
-            user.UserID.equals(userID)
-        )
-        if(!registeredUser){
-            return res.status(404).json({ message: "User is not registered to this event" });
+        const {bookingID} = req.params; 
+        if(!bookingID){
+            return res.status(404).json({message: "BookingID not found" }); // check if booking id is present in params 
         }
 
-        const ticketBooked = booking.TicketQuantity;
+        const ValidBookingID = await Booking.findById(bookingID);
+        if(!ValidBookingID){
+            return res.status(404).json({ message: "Invalid Booking ID" }); // check for valid booking id 
+        }
 
-        await Event.findByIdAndUpdate(
-            eventID,
-            {
-                $pull : {Registered_User : {UserID : userID}},
-                $inc : {Capacity : ticketBooked}
-            },
-            {new : true}
-        )
+        const EventID = await Booking.EventID;
+        const EventName = Event.findById(EventID).Name;
 
-        await Booking.findByIdAndDelete(bookingID);
+        if(!ValidBookingID.UserID === userID){
+            return res.status(404).json({ message: "Invalid User Action" }); // check if userID is same 
+        }
+        // refund user
+        const refundResponse = await refundPayment(ValidBookingID);
 
-        // implement refunding part in payment section 
+        // delete booking record 
+        if(refundResponse.success){
+            const deleteBookingRecord = await Booking.findByIdAndDelete(ValidBookingID);
+            if(deleteBooking.success){
+                // send the user confirmatory email 
+                const emailReceiver = User.UserInfo.EmailID;
+                const emailSubject = `Booking Deleted for Event ${EventName} and Payment Refunded`;
+                const emailText = `Dear ${req.user.Username},\n\nYour booking for the event ${EventName} bearing the booking number 
+                ${bookingID} is successfully deleted and your payment for the booking will also be refunded shortly\n\n
+                For any other concerns please feel confortable to contact us\n\nBest Regards,\nTeam Eventify;`
+
+                await SendmailTransport(emailReceiver,emailSubject,emailText);
+                return res.status(200).json({
+                    success : true,
+                    message : `Booking Deleted ... Payment Refunded and Email Sent to ${req.user.EmailID}`
+                })
+            }else{
+                return res.status(400).json({ message: "Booking Deletion failed." });
+            }
+        }else{
+            return res.status(400).json({ message: "Payment Refunding failed." });
+        }
         
-        // send confirmation email here 
-
     }catch(err){
         return res.status(500).json({ 
             message: "Server Error",
