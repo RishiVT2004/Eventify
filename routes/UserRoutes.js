@@ -7,21 +7,10 @@ import { getCurrentEvent , BookEvent , deleteBooking , getUserRegisteredEvents ,
 import { initiatePayment , confirmPayment , refundPayment , getPaymentStatus , listUserPayments} from "../controller/user/UserPaymentHandler.js";
 import { PostReview , GetReview } from "../controller/user/UserReview.js"; 
 import rateLimiter from "express-rate-limit";
+import { authLimiter,generalLimiter } from "../utils/ratelimiter.js";
 
 dotenv.config()
 const router = Router();
-
-const authLimiter = rateLimiter({
-    windowMs : 10*60*1000,
-    max : 5,
-    message : 'Too many requests from this IP, please try again later.'
-})
-
-const generalLimiter = rateLimiter({
-    windowMs : 60*60*1000,
-    max : 500,
-    message : 'Too many requests from this IP, please try again later.'
-})
 
 // signup , signin 
 router.post('/signup',authLimiter,userSignup);
@@ -48,7 +37,7 @@ router.get('/payment/status/:paymentID' , generalLimiter,jwtAuth , getPaymentSta
 router.get('/payment/user' , jwtAuth , generalLimiter,listUserPayments) // This route enables users to view all their payment transactions
 
 //Event Reviews 
-router.post('/event/:eventID/PostReview', jwtAuth, PostReview); // Add a review for an event
-router.get('/event/:eventID/GetReview', GetReview); // Fetch reviews for an event
+router.post('/event/:eventID/PostReview',generalLimiter,jwtAuth, PostReview); // Add a review for an event
+router.get('/event/:eventID/GetReview', generalLimiter,GetReview); // Fetch reviews for an event
 
 export default router;

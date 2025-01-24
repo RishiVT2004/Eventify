@@ -6,21 +6,10 @@ import { createEvent , eventList , updateEvent , deleteEvent} from '../controlle
 import { EventAnalytics } from '../controller/admin/AdminEventAnalytics.js'; 
 import { jwtAuth } from '../middlewares/Auth.js';
 import rateLimiter from 'express-rate-limit'
+import { authLimiter,generalLimiter } from '../utils/ratelimiter.js';
 
 dotenv.config();
 const router = Router();
-
-const authLimiter = rateLimiter({
-    windowMs : 10*60*1000,
-    max : 5,
-    message : 'Too many requests from this IP, please try again later.'
-})
-
-const generalLimiter = rateLimiter({
-    windowMs : 60*60*1000,
-    max : 500,
-    message : 'Too many requests from this IP, please try again later.'
-})
 
 // login and signup
 router.post('/signup' , authLimiter ,adminSignup);
