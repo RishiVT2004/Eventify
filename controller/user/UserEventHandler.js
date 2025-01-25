@@ -183,24 +183,26 @@ export const deleteBooking = async(req,res) => {
             return res.status(404).json({message: "BookingID not found" }); // check if booking id is present in params 
         }
 
-        const ValidBookingID = await Booking.findById(bookingID);
-        if(!ValidBookingID){
+        const ValidBooking = await Booking.findById(bookingID);
+        if(!ValidBooking){
             return res.status(404).json({ message: "Invalid Booking ID" }); // check for valid booking id 
         }
 
-        const EventID = await Booking.EventID;
-        const EventName = Event.findById(EventID).Name;
-
-        if(!ValidBookingID.UserID === userID){
-            return res.status(404).json({ message: "Invalid User Action" }); // check if userID is same 
+        if(ValidBooking.UserID != userID){
+            return res.status(401).json({ message: "Unauthorized action. You can only delete your own bookings." });
         }
+        
+        const EventID = await Booking.EventID;
+        const Event = Event.findById(EventID);
+
         // refund user
-        const refundResponse = await refundPayment(ValidBookingID);
+        const refundResponse = await refundPayment(ValidBooking);
 
         // delete booking record 
         if(refundResponse.success){
-            const deleteBookingRecord = await Booking.findByIdAndDelete(ValidBookingID);
-            if(deleteBooking.success){
+            Event.Tickets += ValidBooking.Tickets;
+            const deleteBookingRecord = await Booking.findByIdAndDelete(ValidBooking);
+            if(deleteBookingRecord.success){
                 // send the user confirmatory email 
                 const emailReceiver = User.UserInfo.EmailID;
                 const emailSubject = `Booking Deleted for Event ${EventName} and Payment Refunded`;

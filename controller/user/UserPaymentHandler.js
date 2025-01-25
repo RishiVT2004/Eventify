@@ -1,6 +1,7 @@
+import Razorpay from "razorpay";
 import Booking from "../../models/BookingModel.js";
 import Payment from "../../models/PaymentModel.js" 
-import { createOrder , verifyPayment } from "../../utils/razorpay.js"
+import { createOrder , verifyPayment , razorpayInstance} from "../../utils/razorpay.js"
 
 export const initiatePayment = async(req,res,bookingID,amount,user) => { // where we will call this from 
     try{
@@ -97,10 +98,38 @@ export const refundPayment = async(req,res,bookingID) => {
         return res.status(403).json({ message: "Only User can book tickets for an event" });
     }
     const userID = req.user.id;
+    // payment id -> razorpay order id 
     try {
-       
+        // Validate Booking ID
+        const booking = await Booking.findOne({ BookingID: bookingID });
+        if(!booking){
+            return res.status(404).json({ message: "Booking not found." });
+        }
 
+        // Retrieve Payment details
+        const paymentID = booking.PaymentID;
+        const payment = await Payment.findOne({ PaymentID: paymentID });
+        if(!payment){
+            return res.status(404).json({ message: "No valid payment record found." });
+        }
 
+        const amount = payment.AmountPaid;
+        const razorpay_payment_id = payment.PaymentID;
+        const refund_option = {
+            amount : amount*100, // converting to paise
+            speed : regular
+        }
+
+        const razorpay = razorpayInstance();
+        const refund = razorpay.refund.create(razorpay_payment_id,refund_option);
+        if(refund.status === 'processed'){
+            return {
+                success : true
+            }
+        }else{
+            return res.status(500).json({error : "Error while processing razorpay refunding"});
+        }
+        
     }catch(err){
         return res.status(500).json({ message: "Internal Server Error", error: err.message });
     }
