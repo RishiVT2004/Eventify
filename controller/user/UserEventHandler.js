@@ -201,8 +201,7 @@ export const deleteBooking = async(req,res) => {
         // delete booking record 
         if(refundResponse.success){
             Event.Tickets += ValidBooking.Tickets;
-            const deleteBookingRecord = await Booking.findByIdAndDelete(ValidBooking);
-            if(deleteBookingRecord.success){
+            ValidBooking.Status == 'Cancelled';
                 // send the user confirmatory email 
                 const emailReceiver = User.UserInfo.EmailID;
                 const emailSubject = `Booking Deleted for Event ${EventName} and Payment Refunded`;
@@ -215,9 +214,6 @@ export const deleteBooking = async(req,res) => {
                     success : true,
                     message : `Booking Deleted ... Payment Refunded and Email Sent to ${req.user.EmailID}`
                 })
-            }else{
-                return res.status(400).json({ message: "Booking Deletion failed." });
-            }
         }else{
             return res.status(400).json({ message: "Payment Refunding failed." });
         }

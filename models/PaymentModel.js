@@ -54,7 +54,7 @@ const PaymentSchema = new mongoose.Schema({
         enum : ['Pending','Success','Failed','Refunded'],
         default : 'Pending' 
     }
-},{timestamps : true}) // sutomatically creates a createdat and updatedat fields 
+},{timestamps : true}) // automatically creates a createdat and updatedat fields 
 
 const Payment = mongoose.model('Payment',PaymentSchema)
 

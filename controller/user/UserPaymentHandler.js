@@ -2,6 +2,7 @@ import Razorpay from "razorpay";
 import Booking from "../../models/BookingModel.js";
 import Payment from "../../models/PaymentModel.js" 
 import { createOrder , verifyPayment , razorpayInstance} from "../../utils/razorpay.js"
+import User from "../../models/UserModel.js";
 
 export const initiatePayment = async(req,res,bookingID,amount,user) => { // where we will call this from 
     try{
@@ -97,7 +98,7 @@ export const refundPayment = async(req,res,bookingID) => {
     if (!req.user) {
         return res.status(403).json({ message: "Only User can book tickets for an event" });
     }
-    const userID = req.user.id;
+    const {userID} = req.user.id;
     // payment id -> razorpay order id 
     try {
         // Validate Booking ID
@@ -121,8 +122,9 @@ export const refundPayment = async(req,res,bookingID) => {
         }
 
         const razorpay = razorpayInstance();
-        const refund = razorpay.refund.create(razorpay_payment_id,refund_option);
+        const refund = razorpay.refunds.create(razorpay_payment_id,refund_option);
         if(refund.status === 'processed'){
+            payment.status == 'Refunded'
             return {
                 success : true
             }
@@ -136,9 +138,58 @@ export const refundPayment = async(req,res,bookingID) => {
 }
 
 export const getPaymentStatus = async (req, res) => {
+    
+    const {paymentID} = req.params;
+    if(!paymentID){
+        return res.status(400).json({error : "No valid Payment ID provided in params"});
+    }
+    if(!req.user){
+        return res.status(403).json({ message: "Only User check for its payment status" })
+    }
+    try{
+        const payment = Payment.findOne({PaymentID : paymentID});
+        if(!payment){
+            return res.status(400).json({error : "No payment record available with give payment ID"});
+        }
+        const userID = payment.UserID;
+        if(userID !== req.user.id){
+            return res.status(400).json({ message: "Invalid User..." });
+        }
 
+        const paymemtStatus = payment.Status;
+        
+        return res.status(200).json({
+            "paymentID" : paymentID,
+            "status" : paymemtStatus
+        })
+
+    }catch(err){
+        return res.status(500).json({ message: "Internal Server Error", error: err.message });
+    }
 }
 
 export const listUserPayments = async(req,res) => {
-    
+    const {userID} = req.params;
+    if(!req.user || req.user !== userID){
+        return res.status(403).json({ message: "Only User check for its payment status" })
+    }
+    try{
+        const payment = await Payment.find({UserID : userID});
+
+        const paymemtinfo = payment.map(payment => ({
+            EventID : payment.EventID,
+            PaymentID : payment.PaymentID,
+            Amount : payment.AmountPaid,
+            Tickets : payment.Tickets,
+            Status : payment.Status
+        }))
+
+        return res.status(200).json({
+            message : "Details of Previous Payments",
+            record : paymemtinfo
+        })
+
+    }catch(err){
+        return res.status(500).json({ message: "Internal Server Error", error: err.message });       
+    }
 }
