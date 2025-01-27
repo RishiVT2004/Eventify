@@ -66,10 +66,7 @@ export const adminSignup = async (req, res) => {
 
     // hashing
     const HashedPassword = await bcrypt.hash(ParsedInput.data.Password, 10);
-    const HashedPhoneNo = await bcrypt.hash(
-      ParsedInput.data.AdminInfo.PhoneNo,
-      10
-    );
+    const HashedPhoneNo = await bcrypt.hash(ParsedInput.data.AdminInfo.PhoneNo, 10);
 
     const newAdmin = await Admin.create({
       Username: ParsedInput.data.Username,
@@ -84,14 +81,12 @@ export const adminSignup = async (req, res) => {
     });
 
     // apply jwt signin here
-    const token = jwt.sign(
-      {
+    const token = jwt.sign({
         id: newAdmin._id,
         role: "admin",
-      },
-      JWT_KEY,
-      { expiresIn: "1hr" }
-    );
+    },JWT_KEY,{
+      expiresIn: "1hr" 
+    });
 
     try {
       await sendEmailNotification(
