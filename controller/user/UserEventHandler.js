@@ -91,7 +91,9 @@ export const BookEvent = async (req, res) => {
         // Update available tickets for the event
         event.Tickets_Availiable -= tickets;
         await event.save();
-
+        
+        // change from here 
+        
         // Call initiatePayment to process the payment
         const paymentResponse = await initiatePayment(req,res,newBooking._id, amount, user);
 

@@ -3,7 +3,7 @@ import Booking from "../../models/BookingModel.js";
 import Payment from "../../models/PaymentModel.js" 
 import { createOrder , verifyPayment , razorpayInstance} from "../../utils/razorpay.js"
 import User from "../../models/UserModel.js";
-
+/*
 export const initiatePayment = async(req,res,bookingID,amount,user) => { // where we will call this from 
     try{
         const booking = await Booking.findById(bookingID);
@@ -135,6 +135,15 @@ export const refundPayment = async(req,res,bookingID) => {
     }catch(err){
         return res.status(500).json({ message: "Internal Server Error", error: err.message });
     }
+}
+*/
+
+export const initiatePayment = async(req,res) => {
+
+}
+
+export const refundPayment = async(req,res) => {
+    
 }
 
 export const getPaymentStatus = async (req, res) => {
