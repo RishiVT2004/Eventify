@@ -4,8 +4,6 @@ import User from '../../models/UserModel.js'
 import Event from '../../models/EventModel.js'
 import Booking from '../../models/BookingModel.js'
 import { sendEmailNotification } from '../../utils/email.js';
-import { initiatePayment , confirmPayment ,refundPayment} from './UserPaymentHandler.js';
-import { createOrder,verifyPayment } from '../../utils/razorpay.js';
 import SendmailTransport from 'nodemailer/lib/sendmail-transport/index.js';
 
 
@@ -92,42 +90,11 @@ export const BookEvent = async (req, res) => {
         event.Tickets_Availiable -= tickets;
         await event.save();
         
-        // change from here 
-        
-        // Call initiatePayment to process the payment
-        const paymentResponse = await initiatePayment(req,res,newBooking._id, amount, user);
-
-        // Check if payment was successful
-        if (paymentResponse.success) {
-            // check paymemt confirmation 
-            const isPaymentConfirmed = await confirmPayment(req,res,{
-                razorpay_payment_id : paymentResponse.razorpay_payment_id,
-                payment_order_id : paymentResponse.payment_order_id,
-                razorpay_signature : paymentResponse.razorpay_signature
-            });
-
-            if(isPaymentConfirmed.success){
-                 // Send confirmation email if payment is successful here
-                const emailReceiver = user.UserInfo.EmailID; // Assuming EmailID is a string property
-                const emailSubject = `Booking Confirmation for Event ${event.Name}`;
-                const emailText = `Dear ${user.Username},\n\nThank you for booking ${tickets} ticket(s) for ${event.Name}.
-                \nYour booking ID is ${newBooking._id}.\nTotal Amount: ₹${amount / 100}\n\nBest Regards,\nTeam Eventify`;
-                
-                await sendEmailNotification(emailReceiver, emailSubject, emailText);
-    
-                return res.status(201).json({
-                    success: true,
-                    order_id: paymentResponse.order_id,
-                    amount: amount / 100,
-                    currency: paymentResponse.currency,
-                    message: "Booking created successfully and payment processed."
-                });
-            }else{
-                return res.status(400).json({ message: "Payment confirmation failed." });
-            }
-        } else {
-            return res.status(400).json({ message: "Payment processing failed." });
-        }
+        await sendEmailNotification(
+            user.UserInfo.EmailID,
+            "Booking Confirmation",
+            `Hello ${user.UserInfo.Name},\n\nYour booking bearing the id ${newBooking._id} has been confirmed. Thank you!\n\nRegards,\nTeam Eventify`
+        )
 
     } catch (err) {
         return res.status(500).json({
@@ -194,31 +161,24 @@ export const deleteBooking = async(req,res) => {
             return res.status(401).json({ message: "Unauthorized action. You can only delete your own bookings." });
         }
         
-        const EventID = await Booking.EventID;
-        const Event = Event.findById(EventID);
+        const user = await User.findById(ValidBooking.UserID);
+        const EventID = ValidBooking.EventID;
+        const event = await Event.findById(EventID);
+        event.Tickets_Availiable += ValidBooking.Tickets;
+        await event.save();
 
-        // refund user
-        const refundResponse = await refundPayment(ValidBooking);
-
-        // delete booking record 
-        if(refundResponse.success){
-            Event.Tickets += ValidBooking.Tickets;
-            ValidBooking.Status == 'Cancelled';
-                // send the user confirmatory email 
-                const emailReceiver = User.UserInfo.EmailID;
-                const emailSubject = `Booking Deleted for Event ${EventName} and Payment Refunded`;
-                const emailText = `Dear ${req.user.Username},\n\nYour booking for the event ${EventName} bearing the booking number 
-                ${bookingID} is successfully deleted and your payment for the booking will also be refunded shortly\n\n
-                For any other concerns please feel confortable to contact us\n\nBest Regards,\nTeam Eventify;`
-
-                await SendmailTransport(emailReceiver,emailSubject,emailText);
-                return res.status(200).json({
-                    success : true,
-                    message : `Booking Deleted ... Payment Refunded and Email Sent to ${req.user.EmailID}`
-                })
-        }else{
-            return res.status(400).json({ message: "Payment Refunding failed." });
+        ValidBooking.Status = 'Cancelled';
+        await ValidBooking.save();
+        try{
+            await sendEmailNotification(
+                user.UserInfo.EmailID,
+                "Delete Booking Confirmation",
+                `Hello ${user.UserInfo.Name},\n\nYour booking bearing the id ${ValidBooking._id} has been cancelled. Thank you!\n\nRegards,\nTeam Eventify`
+            )
+        }catch(err){
+            res.status(401).json({"Error sending email" : err.message})
         }
+       
         
     }catch(err){
         return res.status(500).json({ 
