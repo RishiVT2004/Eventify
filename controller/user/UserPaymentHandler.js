@@ -1,8 +1,11 @@
 import Razorpay from "razorpay";
+import crypto from "crypto";
 import Booking from "../../models/BookingModel.js";
 import Payment from "../../models/PaymentModel.js" 
-import { createOrder , verifyPayment , razorpayInstance} from "../../utils/razorpay.js"
+import { createOrder  , razorpayInstance} from "../../utils/razorpay.js"
 import User from "../../models/UserModel.js";
+import exp from "constants";
+import { stat } from "fs";
 /*
 export const initiatePayment = async(req,res,bookingID,amount,user) => { // where we will call this from 
     try{
@@ -196,30 +199,63 @@ export const initiatePayment = async(req,res) => {
     }
 }
 
-/*
-export const verifyPayment = async(req,res) => {
-    if(!req.user){
-        return res.status(403).json({message : "Only User can book tickets for an event"})
-    } 
-    try{
-        const paymentID = req.params;
-        if(!paymentID){
-            return res.status(401).json({ error: "null paymentID in params"});
-        }
-
-        const payment = Payment.findById(paymentID);
-        if(!payment) {
-            return res.status(404).json({ error: "Payment record not found" });
-        }
-    }catch(err){
-
-    }
-
-}
-*/
 
 export const razorpayWebhook = async(req,res) => {
+    try{
+        const razorpay_signature = req.headers['x-razorpay-signature'];
+        const secretkey = process.env.RAZORPAY_KEY_SECRET // key for verifying signature
 
+        const body = JSON.stringify(req.body); // convert body(razorpayy data) to JSON string 
+        const expectedsignature = crypto.createHmac('sha256',secretkey).update(body).digest('hex'); // signature verification in webhooks or API authentication.
+        /*
+            crypto.createHmac('sha256', secretkey)
+            Creates an HMAC object using the SHA-256 hashing algorithm.
+            secretkey is the private key used for hashing (typically provided by a payment gateway or API for security verification).
+            
+            .update(body)
+            Feeds the body (which could be a request payload or message) into the HMAC function.
+            This ensures that the hash is computed based on the actual data.
+            
+            .digest('hex')
+            Converts the final hash into a hexadecimal string format.
+        */
+
+        // If the signature does not match, reject the request
+        if(expectedsignature !== razorpay_signature){
+            return res.status(400).json({ message: 'Invalid signature' });
+        }
+
+        const {payload} = req.body;
+        const event = payload.payment.entity; // represent razorpay object 
+        const paymentID = event.id; // Razorpay Payment ID
+        const orderID = event.order_id; // Order ID linked to this payment
+        const status = event.status; // Payment status (e.g., "captured", "failed")
+
+        // find payment record in database and Update payment status in the database 
+        const payment = await Payment.findOne({PaymentID : orderID});
+        if (!payment) {
+            return res.status(404).json({ message: 'Payment record not found' });
+        }
+
+        if(status === 'captured'){
+            payment.Status = 'Success';
+        }else{
+            payment.Status = 'Failed';
+        }   
+
+        // Update the associated booking status based on payment success/failure
+        payment.razorpay_payment_id = paymentID;
+        await payment.save();
+
+        if(status === 'captured'){
+            await Booking.findOneAndUpdate(payment.BookingID , {Status : 'Confirmed'});
+        }else{
+            await Booking.findByIdAndUpdate(payment.BookingID, { Status: 'Failed' });
+        }
+
+    }catch(err){
+        return res.status(500).json({ message: 'Internal Server Error', error: err.message });
+    }
 } 
 
 export const refundPayment = async(req,res) => {
