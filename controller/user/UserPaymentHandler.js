@@ -146,13 +146,13 @@ export const initiatePayment = async(req,res) => {
         const {bookingid} = req.params;
         const booking = await Booking.findById(bookingid);
 
-        const paymemt = new Payment({ // new payment object
-            UserID : booking.UserID,
-            EventID : booking.EventID,
-            BookingID : bookingid,
-            Tickets : booking.Tickets,
-            AmountPaid : booking.Amount
-        })
+        if (!booking) {
+            return res.status(404).json({ message: "Booking not found" });
+        }
+
+        if(booking.Status != 'Pending'){
+            return res.status(400).json({ message: "Payment already initiated or completed for this booking" });       
+        }
 
         const option = { // object for razorpay instance 
             amount : booking.Amount*100,
@@ -161,19 +161,32 @@ export const initiatePayment = async(req,res) => {
             payment_capture: 1            
         }
 
-        const neworder = await createOrder(option);
-        paymemt.PaymentID = neworder.id
+        const newOrder = await createOrder(option);
+        if (!newOrder || !newOrder.id) {
+            return res.status(500).json({ message: "Failed to create Razorpay order" });
+        }
 
-        await paymemt.save();
+        const payment = new Payment({ // new payment object
+            UserID : booking.UserID,
+            EventID : booking.EventID,
+            BookingID : bookingid,
+            PaymentID: newOrder.id, // razorpay_order_id
+            Tickets : booking.Tickets,
+            AmountPaid : booking.Amount
+        })
 
-        booking.PaymentID = neworder.id;
+
+        await payment.save();
+
+        booking.PaymentID = newOrder.id;
         booking.Status = "Pending";
+
         await booking.save();
 
         return res.status(200).json({
             message : "Payment initiated successfully",
-            order_id: neworder.id, 
-            amount: neworder.amount/100, // generates in rs 
+            razorpay_order_id: newOrder.id, 
+            amount: newOrder.amount/100, // generates in rs 
         });
     }catch(err){
         return res.status(500).json({
@@ -182,6 +195,32 @@ export const initiatePayment = async(req,res) => {
         });
     }
 }
+
+/*
+export const verifyPayment = async(req,res) => {
+    if(!req.user){
+        return res.status(403).json({message : "Only User can book tickets for an event"})
+    } 
+    try{
+        const paymentID = req.params;
+        if(!paymentID){
+            return res.status(401).json({ error: "null paymentID in params"});
+        }
+
+        const payment = Payment.findById(paymentID);
+        if(!payment) {
+            return res.status(404).json({ error: "Payment record not found" });
+        }
+    }catch(err){
+
+    }
+
+}
+*/
+
+export const razorpayWebhook = async(req,res) => {
+
+} 
 
 export const refundPayment = async(req,res) => {
     

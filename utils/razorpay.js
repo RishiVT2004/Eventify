@@ -17,30 +17,19 @@ export const razorpayInstance = () => {
 export const createOrder = async(options) => {
     try{
         order = await razorpayInstance.orders.create(options);
-        return order; // id of this new oder in payment id for respective booking 
+        return order; // razorpay order id / payment id  
     }catch(err){
         throw new Error("Error creating Razorpay order: " + err.message); // no usage of res in function 
     }
 }
-export const verifyPayment = async(paymentDetails) => {
-    // Implement Razorpay's checksum or signature verification logic
-    // Example: Razorpay utility for signature verification can be used
-    // Replace with actual verification logic
-    try{
-        const {razorpay_payment_id,razorpay_order_id,razorpay_signature} = paymentDetails;
-
-        const generateSignnature = Crypto
-        .createHmac('sha256',process.env.RAZORPAY_KEY_SECRET)
-        .update(`${razorpay_order_id}--${razorpay_payment_id}`)
-        .digest('hex');
-
-        return generateSignnature === razorpay_signature // return boolean
-    }catch(err){
-        return res.status(500).json({"Error veryfing razorpay payment signature" : err.message()});
-    }   
-};
 
 export const refund_Payment = async(razorpay_payment_id,options) => {
     const refund = await Razorpay.refunds.create(razorpay_payment_id,options);
     return refund.status;
 }
+
+/*
+razorpay_order_id -> (Generated when order is created)	Used to identify a payment attempt (linked to multiple payments if retries happen)
+razorpay_payment_id	-> (Generated after payment is completed)	Unique identifier for a successful transaction
+razorpay_signature ->  Used for verification
+*/

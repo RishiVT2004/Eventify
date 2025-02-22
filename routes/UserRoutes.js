@@ -4,7 +4,7 @@ import { jwtAuth } from "../middlewares/Auth.js";
 import {userSignup,userLogin} from '../controller/user/UserLogin_SignpuController.js'
 import { getUserProfile , updateUserProfile , changePassword} from "../controller/user/UserProfileHandler.js";
 import { getCurrentEvent , BookEvent , deleteBooking , getUserRegisteredEvents , getEventDetails} from "../controller/user/UserEventHandler.js";
-import { initiatePayment, refundPayment ,getPaymentStatus , listUserPayments} from "../controller/user/UserPaymentHandler.js";
+import { initiatePayment, razorpayWebhook ,refundPayment ,getPaymentStatus , listUserPayments} from "../controller/user/UserPaymentHandler.js";
 import { PostReview , GetReview } from "../controller/user/UserReview.js"; 
 import rateLimiter from "express-rate-limit";
 import { authLimiter,generalLimiter } from "../utils/ratelimiter.js";
@@ -35,6 +35,8 @@ router.get('/registeredEvents',generalLimiter,jwtAuth,getUserRegisteredEvents); 
 //refund the money and cancel booking
 // above are in form of functions 
 router.post('/initiatepaymet/:bookingID',authLimiter,jwtAuth,initiatePayment);
+router.post('/webhook/razorpay',razorpayWebhook)
+//router.post('verifypayment/:paymentID',authLimiter,jwtAuth,verifyPayment);
 router.post('/refund/:paymentID',authLimiter,jwtAuth,refundPayment);
 router.get('/payment/status/:paymentID' , generalLimiter,jwtAuth , getPaymentStatus) // users to check the status of their payments
 router.get('/payment/user/:userID' , jwtAuth , generalLimiter,listUserPayments) // This route enables users to view all their payment transactions
@@ -44,3 +46,10 @@ router.post('/event/:eventID/PostReview',generalLimiter,jwtAuth, PostReview); //
 router.get('/event/:eventID/GetReview', generalLimiter,GetReview); // Fetch reviews for an event
 
 export default router;
+
+/*
+However, removing authLimiter and jwtAuth from the webhook route is recommended because:
+
+Razorpay’s servers won’t have authentication tokens—the request won’t pass authentication.
+Webhooks should be publicly accessible but secured using signature verification.
+*/

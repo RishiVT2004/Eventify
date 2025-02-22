@@ -35,12 +35,6 @@ const PaymentSchema = new mongoose.Schema({
     AmountPaid : {
         type : Number,
         required : true,
-        validate : {
-            validator : function(v){
-                return v > 0;
-            },
-            message : 'Amount paid must be greater than 0' // handles -ve input 
-        }
     },
     PaymentMethod : {
         type : String,
@@ -53,6 +47,15 @@ const PaymentSchema = new mongoose.Schema({
         required : true,
         enum : ['Pending','Success','Failed','Refunded'],
         default : 'Pending' 
+    },
+    razorpay_payment_id: { 
+        type: String 
+    },
+    razorpay_order_id: { 
+        type: String 
+    },
+    razorpay_signature: { 
+        type: String 
     }
 },{timestamps : true}) // automatically creates a createdat and updatedat fields 
 
