@@ -2,7 +2,7 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import Booking from "../../models/BookingModel.js";
 import Payment from "../../models/PaymentModel.js" 
-import { createOrder  , razorpayInstance} from "../../utils/razorpay.js"
+import { createOrder  , refund_Payment} from "../../utils/razorpay.js"
 import User from "../../models/UserModel.js";
 import exp from "constants";
 import { stat } from "fs";
@@ -259,7 +259,50 @@ export const razorpayWebhook = async(req,res) => {
 } 
 
 export const refundPayment = async(req,res) => {
-    
+    if(!req.user){
+        return res.status(403).json({message : "Only User can book tickets for an event"})
+    }
+    try{
+        const userID = req.user.id;
+        const {paymentID} = req.params; // deconstruct paymentID from object 
+
+        const payment = await Payment.findOne({UserID : userID,razorpay_payment_id : paymentID});
+        if(!payment){
+            return res.status(404).json({ message: 'Payment record not found' });
+        }
+        
+        const paymentStatus = payment.Status;
+        if(paymentStatus === 'Refunded'){
+            return res.status(400).json({ message: 'Payment has already been refunded' });
+        }
+        
+        const options = {
+            amount : payment.AmountPaid, // Refund the full amount
+            speed : "normal", // Faster refund processing when possible
+            reciept : `**refunded** Time : ${Date.now()} PaymentID : ${paymentID} userID : ${userID} amount : ${payment.AmountPaid}`,
+        }
+
+        const refund = await refund_Payment(paymentID,options);
+
+        payment.Status = 'Refunded';
+        await payment.save();
+
+        const booking = await Booking.findByIdAndUpdate(payment.BookingID,{Status : "Refunded"});
+        await booking.save();
+
+        const refundDetails = {
+            refundID : refund.id,
+            refundStatus : refund.status
+        }
+
+        return res.status(200).json({
+            message: 'Refund processed successfully',
+            Info : refundDetails
+        });
+
+    }catch(err){
+        return res.status(500).json({ message: 'Internal Server Error', error: err.message });
+    }
 }
 
 export const getPaymentStatus = async (req, res) => {

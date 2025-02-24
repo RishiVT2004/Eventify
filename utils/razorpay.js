@@ -3,7 +3,7 @@ import Razorpay from 'razorpay';
 import Crypto from 'crypto';
 dotenv.config();
 
-export const razorpayInstance = new Razorpay({
+export const razorpayInstance = new Razorpay({ // global razorpay instance , no need to initialize it again 
     key_id : process.env.RAZORPAY_KEY_ID,
     key_secret : process.env.RAZORPAY_KEY_SECRET
 });
@@ -20,8 +20,8 @@ export const createOrder = async(options) => {
 
 export const refund_Payment = async(razorpay_payment_id,options) => {
     try{
-    const refund = await Razorpay.payments.refund(razorpay_payment_id,options);
-    return refund.status;
+    const refund = await razorpayInstance.payments.refund(razorpay_payment_id,options);
+    return refund.status; // Returns 'processed', 'failed', or other status
     }
     catch(err){
         throw new Error("Error processing refund: " + err.message);

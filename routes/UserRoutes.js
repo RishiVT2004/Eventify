@@ -30,10 +30,7 @@ router.get('/registeredEvents',generalLimiter,jwtAuth,getUserRegisteredEvents); 
 
 // payment handler
 
-// initiating payment for the event 
-// confirm the payment 
-//refund the money and cancel booking
-// above are in form of functions 
+
 router.post('/initiatepaymet/:bookingID',authLimiter,jwtAuth,initiatePayment);
 router.post('/webhook/razorpay',razorpayWebhook)
 //router.post('verifypayment/:paymentID',authLimiter,jwtAuth,verifyPayment);

@@ -26,7 +26,7 @@ export const PostReview = async(req,res) => {
             return res.status(400).json({message : 'Incomplete Rating or Feedback field ... please fill them'});
         }
 
-        if(ratings < 1 || ratings > 5){
+        if(ratings < 1 || ratings > 10){
             return res.status(400).json({message : 'Invalid Rating Score'});
         }
 

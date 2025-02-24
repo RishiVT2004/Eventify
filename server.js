@@ -7,8 +7,11 @@ import cors from 'cors'
 dotenv.config();
 
 const app = express();  
-app.use(cors());
-app.use(express.json());
+// app.use(cors('*'));
+app.use(express.json()); 
+/*
+It is a built-in middleware in Express.js that parses incoming JSON request bodies and makes the data available in req.body
+*/
 app.use('/admin', adminRoutes);
 app.use('/user',userRoutes);
 

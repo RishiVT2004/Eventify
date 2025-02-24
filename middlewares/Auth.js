@@ -17,7 +17,7 @@ export const jwtAuth = async(req,res,next) => {
     if (!token) {
         return res.status(401).json({ error:  ErrorTypes.nullToken});
     }
-    const tokenPair = token.split(' ');
+    const tokenPair = token.split(' '); // <Bearer> <Token>
     if(tokenPair.length !== 2 || tokenPair[0] !== 'Bearer'){
         return res.status(401).json({ error: ErrorTypes.wrongFormat });
     }
