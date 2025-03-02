@@ -4,11 +4,9 @@ import dotenv from 'dotenv'
 const URL = process.env.URL;
 
 mongoose.connect(URL)
-    .catch(err => {
-        console.error('Error connecting to database:', err.message); 
-    });
+    .catch(err => console.error('Error connecting to database:', err.message)); 
 
-const FeedbackSchema = new mongoose.Schema({
+    const FeedbackSchema = new mongoose.Schema({
     EventID : {
         type : mongoose.Schema.Types.ObjectId,
         ref : 'Event',

@@ -6,6 +6,7 @@ import { createOrder  , refund_Payment} from "../../utils/razorpay.js"
 import User from "../../models/UserModel.js";
 import exp from "constants";
 import { stat } from "fs";
+import { sendEmailNotification } from "../../utils/email.js";
 /*
 export const initiatePayment = async(req,res,bookingID,amount,user) => { // where we will call this from 
     try{
@@ -294,6 +295,10 @@ export const refundPayment = async(req,res) => {
             refundID : refund.id,
             refundStatus : refund.status
         }
+
+        const user = await User.findById(userID);
+
+        await sendEmailNotification(user.UserInfo.EmailID,"Paymemt Refunded Succesfully",refundDetails);
 
         return res.status(200).json({
             message: 'Refund processed successfully',

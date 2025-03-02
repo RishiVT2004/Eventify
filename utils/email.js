@@ -8,6 +8,8 @@ const transporter = nodemailer.createTransport({
     },
 });
 
+// sends email to desired recipient 
+
 export const sendEmailNotification = async (to, subject, text) => {
     const mailOptions = {
         from: process.env.EMAIL_ID,

@@ -26,6 +26,9 @@ await mongoose.connect(process.env.URL)
         error : err.message
     })
 )
+app.post('/verify',(req,res) => {
+    res.json({'Status' : 'OK'})
+}); // used to verify calls from razorpay webhooks 
 
 app.listen(PORT, () => {
     console.log(`Server is Running on port ${PORT}`);

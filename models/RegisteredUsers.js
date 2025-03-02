@@ -1,6 +1,5 @@
 import mongoose, { mongo } from "mongoose";
 import dotenv from 'dotenv'
-import { Schema, string } from "zod";
 dotenv.config()
 const URL = process.env.URL;
 
