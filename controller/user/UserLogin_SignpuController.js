@@ -95,7 +95,7 @@ export const userSignup = async(req,res)=> {
                     `Hello ${NewUser.UserInfo.Name},\n\nYour user account has been successfully created. Welcome aboard!\n\nRegards,\nTeam Eventify`
                 )
             }catch(err){
-                return res.status(500).json({"error" : "failed to send email"})
+                return res.status(500).json({"error" : "failed to send email","message" : err.message});
             }
             return res.status(202).json({
                 "message" : "User Signup successful ",
@@ -150,12 +150,12 @@ export const userLogin = async(req,res) => {
 
             try{
                 await sendEmailNotification(
-                    NewUser.UserInfo.EmailID,
+                    ExistingUser.UserInfo.EmailID,
                     "Welcome to Eventify",
-                    `Hello ${NewUser.UserInfo.Name},\n\nYou have logged in to eventify. Welcome aboard!.\n\nPS : If this is not you immediately contact us \n\n.Regards,\nTeam Eventify`
+                    `Hello ${ExistingUser.UserInfo.Name},\n\nYou have logged in to eventify. Welcome aboard!.\n\nPS : If this is not you immediately contact us \n\n.Regards,\nTeam Eventify`
                 )
             }catch(err){
-                return res.status(500).json({"error" : "failed to send email"})
+                return res.status(500).json({"error" : "failed to send email","message" : err.message});
             }
 
             return res.status(202).json({

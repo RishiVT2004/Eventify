@@ -6,7 +6,6 @@ import { getUserProfile , updateUserProfile , changePassword} from "../controlle
 import { getCurrentEvent , BookEvent , deleteBooking , getUserRegisteredEvents , getEventDetails} from "../controller/user/UserEventHandler.js";
 import { initiatePayment, razorpayWebhook ,refundPayment ,getPaymentStatus , listUserPayments} from "../controller/user/UserPaymentHandler.js";
 import { PostReview , GetReview } from "../controller/user/UserReview.js"; 
-import rateLimiter from "express-rate-limit";
 import { authLimiter,generalLimiter } from "../utils/ratelimiter.js";
 
 dotenv.config()
